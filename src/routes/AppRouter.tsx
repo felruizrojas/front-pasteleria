@@ -3,19 +3,19 @@ import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import LoginRoute from '@/routes/LoginRoute'
 
-const AppLayout = lazy(() => import('@/app/AppLayout'))
-const HomePage = lazy(() => import('@/features/home/HomePage'))
-const AboutPage = lazy(() => import('@/features/about/AboutPage'))
-const ContactPage = lazy(() => import('@/features/contact/ContactPage'))
-const MenuPage = lazy(() => import('@/features/menu/MenuPage'))
-const MenuDetailsPage = lazy(() => import('@/features/menu/MenuDetailsPage'))
-const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'))
-const BlogPage = lazy(() => import('@/features/blog/BlogPage'))
-const CartPage = lazy(() => import('@/features/cart/CartPage'))
-const RegisterUserPage = lazy(() => import('@/features/auth/RegisterUserPage'))
-const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'))
-const TermsPage = lazy(() => import('@/features/legal/TermsPage'))
-const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'))
+const AppLayout = lazy(() => import('@/layouts/AppLayout'))
+const HomePage = lazy(() => import('@/pages/home/HomePage'))
+const AboutPage = lazy(() => import('@/pages/about/AboutPage'))
+const ContactPage = lazy(() => import('@/pages/contact/ContactPage'))
+const MenuPage = lazy(() => import('@/pages/menu/MenuPage'))
+const MenuDetailsPage = lazy(() => import('@/pages/menu/MenuDetailsPage'))
+const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'))
+const BlogPage = lazy(() => import('@/pages/blog/BlogPage'))
+const CartPage = lazy(() => import('@/pages/cart/CartPage'))
+const RegisterUserPage = lazy(() => import('@/pages/auth/RegisterUserPage'))
+const PrivacyPage = lazy(() => import('@/pages/legal/PrivacyPage'))
+const TermsPage = lazy(() => import('@/pages/legal/TermsPage'))
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'))
 
 const basename = (import.meta.env.BASE_URL ?? '/').replace(/\/*$/, '') || '/'
 

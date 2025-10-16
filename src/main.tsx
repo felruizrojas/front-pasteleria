@@ -5,13 +5,18 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import '@/styles/theme.css'
 import '@/index.css'
-import App from '@/app/App'
-import { initLocalData } from '@/shared/utils/storage/initLocalData'
+import AppRouter from '@/routes/AppRouter'
+import { AuthProvider, ThemeProvider } from '@/context'
+import { initLocalData } from '@/utils/storage/initLocalData'
 
 initLocalData()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <ThemeProvider>
+        <AppRouter />
+      </ThemeProvider>
+    </AuthProvider>
   </StrictMode>,
 )

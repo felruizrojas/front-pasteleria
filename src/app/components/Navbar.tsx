@@ -118,7 +118,7 @@ const Navbar = () => {
 						width={80}
 						className="rounded-pill me-2 logo"
 					/>
-					<span className="ms-2 fw-semibold d-none d-lg-inline brand-script">Pasteleria Mil Sabores</span>
+					<span className="ms-2 fw-semibold d-none d-lg-inline">Pasteleria Mil Sabores</span>
 				</NavLink>
 
 				<button

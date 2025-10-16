@@ -12,7 +12,7 @@ const Login = () => (
 						<div className="text-center px-4">
 							<img src={logoImage} alt="Pasteleria Mil Sabores" width={140} className="rounded-pill mb-3" />
 							<h1 className="h3 fw-bold mb-1">Pasteleria Mil Sabores</h1>
-							<p className="text-muted-soft mb-0">Celebra la dulzura de la vida</p>
+							<p className="mb-0">Celebra la dulzura de la vida</p>
 						</div>
 					</div>
 
@@ -55,7 +55,7 @@ const Login = () => (
 												Recordarme
 											</label>
 										</div>
-										<Link to="/reset-password" className="link-secondary">
+										<Link to="/reset-password" className="link-body-emphasis">
 											Olvidaste tu contrasena?
 										</Link>
 									</div>
@@ -68,7 +68,7 @@ const Login = () => (
 
 									<p className="mb-0 text-center">
 										No tienes cuenta?
-										<Link to="/register" className="ms-1 link-secondary">
+										<Link to="/register" className="ms-1 link-body-emphasis">
 											Crear cuenta
 										</Link>
 									</p>

@@ -52,7 +52,7 @@ const LoginOffcanvas = () => {
 								Recordarme
 							</label>
 						</div>
-						<Link to="/reset-password" className="link-secondary" onClick={handleNavigate}>
+						<Link to="/reset-password" className="link-body-emphasis" onClick={handleNavigate}>
 							Olvidaste tu contrasena?
 						</Link>
 					</div>
@@ -65,7 +65,7 @@ const LoginOffcanvas = () => {
 
 					<p className="mb-0 text-center">
 						No tienes cuenta?
-						<Link to="/register" className="ms-1 link-secondary" onClick={handleNavigate}>
+						<Link to="/register" className="ms-1 link-body-emphasis" onClick={handleNavigate}>
 							Crear cuenta
 						</Link>
 					</p>

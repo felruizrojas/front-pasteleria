@@ -70,13 +70,13 @@ const Footer = () => {
 	const location = useLocation()
 
 	return (
-		<footer className="site-footer bg-white border-top mt-5 text-body-secondary">
+		<footer className="site-footer border-top mt-5">
 			<div className="container-fluid py-5 px-4 px-lg-5">
 				<div className="row g-4">
 					<div className="col-12 col-sm-6 col-md-4 col-lg-3">
 						<Link
 							to="/"
-							className="d-flex align-items-center w-100 mb-3 text-decoration-none"
+							className="d-flex align-items-center w-100 mb-3 text-decoration-none link-body-emphasis"
 							onClick={(event) => {
 								if (typeof window === 'undefined') {
 									return
@@ -94,14 +94,13 @@ const Footer = () => {
 								width={60}
 								className="rounded-pill me-2 flex-shrink-0"
 							/>
-							<span className="fs-5 fw-semibold text-truncate text-primary">Pasteleria Mil Sabores</span>
+							<span className="fs-5 fw-semibold text-truncate">Pasteleria Mil Sabores</span>
 						</Link>
-						<p className="text-muted mb-0">Celebra la dulzura de la vida con Pasteleria 1000 Sabores.</p>
+						<p className="mb-0">Celebra la dulzura de la vida con Pasteleria 1000 Sabores.</p>
 					</div>
-
 					{footerSections.map((section) => (
 						<div className="col-12 col-sm-6 col-md-4 col-lg" key={section.title}>
-							<h6 className="fw-bold text-uppercase text-secondary small">{section.title}</h6>
+							<h6 className="fw-bold text-uppercase small">{section.title}</h6>
 							{section.links ? (
 								<ul className="nav flex-column">
 									{section.links.map((link) => {
@@ -111,7 +110,7 @@ const Footer = () => {
 												{external ? (
 													<a
 														href={to}
-														className="nav-link p-0 text-secondary"
+														className="nav-link p-0 link-body-emphasis"
 														target="_blank"
 														rel="noreferrer"
 													>
@@ -120,17 +119,17 @@ const Footer = () => {
 												) : (
 													<Link
 														to={to}
-														className="nav-link p-0 text-secondary"
+														className="nav-link p-0 link-body-emphasis"
 														onClick={(event) => {
-														if (typeof window === 'undefined') {
-															return
-														}
+															if (typeof window === 'undefined') {
+																return
+															}
 
-														if (to === '/' && location.pathname === '/') {
-															event.preventDefault()
-															window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-														}
-													}}
+															if (to === '/' && location.pathname === '/') {
+																event.preventDefault()
+																window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+															}
+														}}
 													>
 														{label}
 													</Link>
@@ -143,7 +142,7 @@ const Footer = () => {
 
 							{section.description
 								? section.description.map((line) => (
-									<p className="text-secondary mb-0" key={line}>
+									<p className="mb-0" key={line}>
 										{line}
 									</p>
 								))
@@ -155,7 +154,7 @@ const Footer = () => {
 										<a
 											key={social.label}
 											href={social.href}
-											className="text-secondary fs-4"
+											className="fs-4 link-body-emphasis"
 											aria-label={social.label}
 											target="_blank"
 											rel="noreferrer"
@@ -169,20 +168,20 @@ const Footer = () => {
 					))}
 				</div>
 
-				<hr className="border-secondary my-4" />
+				<hr className="my-4" />
 
 				<div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
-					<small className="text-secondary">
+					<small>
 						&copy; {new Date().getFullYear()} Pasteleria Mil Sabores. Todos los derechos reservados.
 					</small>
 					<ul className="nav">
 						<li className="nav-item">
-							<Link to="/privacy" className="nav-link px-2 text-secondary">
+							<Link to="/privacy" className="nav-link px-2 link-body-emphasis">
 								Privacidad
 							</Link>
 						</li>
 						<li className="nav-item">
-							<Link to="/terms" className="nav-link px-2 text-secondary">
+							<Link to="/terms" className="nav-link px-2 link-body-emphasis">
 								Terminos
 							</Link>
 						</li>

@@ -69,7 +69,7 @@ const About = () => (
 						<div className="col-md-6">
 							<h1 className="section-title mb-3">{block.title}</h1>
 							{block.description.map((paragraph) => (
-								<p className="text-muted-soft" key={paragraph}>
+								<p key={paragraph}>
 									{paragraph}
 								</p>
 							))}
@@ -81,8 +81,8 @@ const About = () => (
 			<div className="container">
 				<div className="mt-4 p-5 card-soft text-center">
 					<h3 className="mb-3">Celebra la dulzura de la vida con Pasteleria 1000 Sabores</h3>
-					<h5 className="mb-1 text-muted-soft">Estamos emocionados de compartir nuestras delicias contigo.</h5>
-					<h5 className="text-muted-soft">Descubre, saborea y crea momentos inolvidables con nosotros.</h5>
+					<h5 className="mb-1">Estamos emocionados de compartir nuestras delicias contigo.</h5>
+					<h5>Descubre, saborea y crea momentos inolvidables con nosotros.</h5>
 				</div>
 			</div>
 		</section>

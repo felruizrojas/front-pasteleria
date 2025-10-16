@@ -216,7 +216,7 @@ const MenuDetails = () => {
 			<section className="container py-5">
 				<div className="card card-soft shadow-soft p-5 text-center">
 					<h1 className="section-title mb-3">Producto no encontrado</h1>
-					<p className="text-muted-soft mb-4">
+					<p className="mb-4">
 						Es posible que el código ingresado no exista o que el producto haya sido actualizado.
 					</p>
 					<Button as="link" to="/menu">
@@ -293,13 +293,13 @@ const MenuDetails = () => {
 						<div className="card-body d-flex flex-column gap-3">
 							<div>
 								<h1 className="h3 mb-1">{producto.nombre_producto}</h1>
-								<div className="small text-secondary mb-2">
+								<div className="small mb-2">
 									<span className="me-2">Código:</span>
 									<code>{producto.codigo_producto}</code>
 								</div>
-								<p className="brand-accent h4 mb-3">{formatPrice(producto.precio_producto)}</p>
+								<p className="h4 mb-3">{formatPrice(producto.precio_producto)}</p>
 							</div>
-							<p className="text-muted-soft">{producto.descripción_producto}</p>
+							<p>{producto.descripción_producto}</p>
 							<hr />
 							<div>
 								<label className="form-label" htmlFor="customMessage">
@@ -322,12 +322,12 @@ const MenuDetails = () => {
 								Añadir al carrito
 							</Button>
 							{feedback ? (
-								<div className="small text-success" role="status" aria-live="polite">
+								<div className="small" role="status" aria-live="polite">
 									{feedback}
 								</div>
 							) : null}
 							<hr />
-							<ul className="list-unstyled small text-secondary mb-0">
+							<ul className="list-unstyled small mb-0">
 								<li>
 									<i className="bi bi-check2-circle me-2" aria-hidden="true" />Decoración personalizable
 								</li>
@@ -343,7 +343,7 @@ const MenuDetails = () => {
 			<section className="mt-5">
 				<h2 className="h5 mb-3">Productos recomendados</h2>
 				{recommended.length === 0 ? (
-					<p className="text-muted-soft mb-0">Pronto añadiremos más recomendaciones.</p>
+					<p className="mb-0">Pronto añadiremos más recomendaciones.</p>
 				) : (
 					<div className="row row-cols-1 row-cols-md-3 g-3">
 						{recommended.map((item) => (
@@ -359,7 +359,7 @@ const MenuDetails = () => {
 									</Link>
 									<div className="card-body d-flex flex-column gap-2">
 										<h3 className="h6 mb-0">{item.nombre_producto}</h3>
-										<p className="text-muted mb-0">{formatPrice(item.precio_producto)}</p>
+										<p className="mb-0">{formatPrice(item.precio_producto)}</p>
 										<Button as="link" to={`/menu/${item.codigo_producto}`} size="sm">
 											Ver detalle
 										</Button>

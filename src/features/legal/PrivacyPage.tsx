@@ -2,7 +2,7 @@ const PrivacyPage = () => (
     <main className="container py-5">
         <header className="mb-4">
             <h1 className="fw-bold">Politica de Privacidad</h1>
-            <p className="text-muted-soft mb-0">Vigente desde: 01 de septiembre de 2025</p>
+            <p className="mb-0">Vigente desde: 01 de septiembre de 2025</p>
         </header>
 
         <section className="mb-4">
@@ -42,7 +42,7 @@ const PrivacyPage = () => (
             <p>
                 Puedes solicitar acceso, rectificacion, cancelacion u oposicion a tus datos escribiendo a
                 <span className="ms-1">
-                    <a className="link-choco" href="mailto:pasteleria.1000sabores@gmail.com">
+                    <a className="link-body-emphasis" href="mailto:pasteleria.1000sabores@gmail.com">
                         pasteleria.1000sabores@gmail.com
                     </a>
                 </span>

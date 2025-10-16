@@ -6,8 +6,6 @@ import { Button, Input } from '@/shared/components/common'
 import { logoImage } from '@/assets'
 import { REGIONES_COMUNAS } from '@/shared/data/region_comuna'
 
-const heroImageUrl = new URL('../../assets/images/carrusel/diversidad_pasteles.jpg', import.meta.url).href
-
 const RegisterUser = () => {
 	const location = useLocation()
 	const currentPath = location.pathname
@@ -51,23 +49,16 @@ const RegisterUser = () => {
 
 	return (
 		<main className="mt-0">
-			<section
-				className="position-relative overflow-hidden text-white"
-				style={{
-					backgroundImage: `linear-gradient(180deg, rgba(33, 37, 41, 0.65), rgba(33, 37, 41, 0.65)), url(${heroImageUrl})`,
-					backgroundSize: 'cover',
-					backgroundPosition: 'center',
-				}}
-			>
+			<section className="position-relative overflow-hidden">
 				<div className="container py-5">
 					<div className="row justify-content-center">
 						<div className="col-12 col-lg-10">
 							<div className="d-flex flex-column flex-lg-row align-items-center gap-4 text-center text-lg-start">
 								<img src={logoImage} alt="Pastelería Mil Sabores" width={140} className="rounded-pill shadow" />
 								<div>
-									<span className="badge text-bg-light text-uppercase fw-semibold mb-2 text-body">Tu pastelería favorita</span>
-									<h1 className="display-6 fw-bold mb-2 text-white">Crea tu cuenta</h1>
-									<p className="lead mb-0 text-white-50">
+									<span className="badge text-uppercase fw-semibold mb-2">Tu pastelería favorita</span>
+									<h1 className="display-6 fw-bold mb-2">Crea tu cuenta</h1>
+									<p className="lead mb-0">
 										Accede a beneficios dulces, seguimiento de pedidos y novedades exclusivas.
 									</p>
 								</div>
@@ -84,7 +75,7 @@ const RegisterUser = () => {
 							<div className="bg-body border rounded-3 shadow-sm p-4 p-lg-5">
 								<header className="d-flex align-items-start justify-content-between mb-4">
 									<div>
-										<span className="badge text-bg-light text-uppercase fw-semibold mb-2">Nuevo registro</span>
+										<span className="badge text-uppercase fw-semibold mb-2">Nuevo registro</span>
 										<h2 className="h4 mb-0">
 											<i className="bi bi-person-plus me-2" aria-hidden="true" />Crear cuenta
 										</h2>
@@ -93,7 +84,7 @@ const RegisterUser = () => {
 										<i className="bi bi-x-lg" aria-hidden="true" />
 									</Button>
 								</header>
-								<p className="text-muted-soft mb-4">
+								<p className="mb-4">
 									Completa tus datos para disfrutar de promociones personalizadas y un proceso de compra más ágil.
 								</p>
 
@@ -214,7 +205,7 @@ const RegisterUser = () => {
 									<div className="form-check mb-4">
 										<input type="checkbox" className="form-check-input" id="terms" name="terms" />
 										<label className="form-check-label" htmlFor="terms">
-											<a className="link-choco" href="/terminos">
+											<a className="link-body-emphasis" href="/terminos">
 												Acepto los términos y condiciones
 											</a>
 										</label>
@@ -230,7 +221,7 @@ const RegisterUser = () => {
 
 									<p className="mb-0 text-center">
 										¿Ya tienes cuenta?{' '}
-										<Link to="/login" className="link-choco" state={{ from: currentPath }}>
+										<Link to="/login" className="link-body-emphasis" state={{ from: currentPath }}>
 											Inicia sesión
 										</Link>
 									</p>

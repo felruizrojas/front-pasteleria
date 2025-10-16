@@ -90,7 +90,7 @@ const Profile = () => {
 
 									<div className="text-start small">
 										<div className="d-flex justify-content-between">
-											<span className="text-muted">Correo</span>
+											<span>Correo</span>
 											<span className="fw-semibold">{placeholderProfile.email}</span>
 										</div>
 									</div>

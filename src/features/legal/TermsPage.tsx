@@ -2,7 +2,7 @@ const TermsPage = () => (
 	<main className="container py-5">
 		<header className="mb-4">
 			<h1 className="fw-bold">Terminos y Condiciones</h1>
-			<p className="text-muted-soft mb-0">Vigentes desde: 01 de septiembre de 2025</p>
+			<p className="mb-0">Vigentes desde: 01 de septiembre de 2025</p>
 		</header>
 
 		<section className="mb-4">

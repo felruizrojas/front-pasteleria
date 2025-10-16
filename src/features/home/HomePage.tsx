@@ -184,7 +184,7 @@ const Home = () => {
 				<div className="container">
 					<h2 className="mb-4 text-center section-title">Nuestra carta</h2>
 					{featuredProducts.length === 0 ? (
-						<p className="text-muted-soft text-center mb-0">
+						<p className="text-center mb-0">
 							Pronto compartiremos nuestra selección de productos.
 						</p>
 					) : (
@@ -202,9 +202,9 @@ const Home = () => {
 												/>
 											</Link>
 											<div className="card-body text-center d-flex flex-column gap-2">
-												<p className="mb-1 text-uppercase small text-secondary">{producto.categoriaNombre}</p>
+												<p className="mb-1 text-uppercase small">{producto.categoriaNombre}</p>
 												<h3 className="h6 mb-0">{producto.nombre_producto}</h3>
-												<p className="mb-0 brand-accent fw-semibold">
+												<p className="mb-0 fw-semibold">
 													{formatPrice(producto.precio_producto)}
 												</p>
 											</div>

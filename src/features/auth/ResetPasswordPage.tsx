@@ -20,7 +20,7 @@ const ResetPasswordPage = () => {
 					<div className="card shadow-soft p-4">
 						<header className="text-center mb-4">
 							<h1 className="h4 mb-2">Restablecer contrasena</h1>
-							<p className="text-muted-soft mb-0">Ingresa tu correo y define tu nueva contrasena.</p>
+							<p className="mb-0">Ingresa tu correo y define tu nueva contrasena.</p>
 						</header>
 
 						<form onSubmit={handleSubmit}>
@@ -81,9 +81,9 @@ const ResetPasswordPage = () => {
 							</Button>
 
 							<p className="text-center mt-4 mb-0">
-								<small className="text-muted-soft">
+								<small>
 									Recuerdas tu contrasena?{' '}
-									<Link to="/login" className="link-choco" state={{ from: currentPath }}>
+									<Link to="/login" state={{ from: currentPath }}>
 										Volver al inicio de sesion
 									</Link>
 								</small>

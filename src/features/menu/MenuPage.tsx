@@ -165,7 +165,7 @@ const Menu = () => {
 			<div className="container">
 				<header className="text-center mb-4 mb-lg-5">
 					<h1 className="section-title mb-2">Nuestra Carta</h1>
-					<p className="text-muted-soft mb-0">
+					<p className="mb-0">
 						Explora nuestras categorías y encuentra el postre ideal para celebrar.
 					</p>
 				</header>
@@ -270,7 +270,7 @@ const Menu = () => {
 				</div>
 
 				<div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-					<p className="text-muted-soft mb-0">
+					<p className="mb-0">
 						{totalProductos === 0
 							? 'Sin productos visibles.'
 							: `${totalProductos} ${totalProductos === 1 ? 'producto disponible' : 'productos disponibles'}`}
@@ -280,7 +280,7 @@ const Menu = () => {
 				{totalProductos === 0 ? (
 					<div className="menu-empty card-soft text-center py-5">
 						<p className="mb-2 fw-semibold">No encontramos productos con los filtros seleccionados.</p>
-						<p className="text-muted-soft mb-4">
+						<p className="mb-4">
 							Ajusta los criterios o vuelve a mostrar toda la carta.
 						</p>
 						<Button type="button" variant="dark" onClick={resetFilters}>
@@ -306,7 +306,7 @@ const Menu = () => {
 										</p>
 										<h3 className="h5 mb-1">{item.nombre_producto}</h3>
 										<p className="menu-card__price mb-2">{formatPrice(item.precio_producto)}</p>
-										<p className="text-muted-soft mb-3 flex-grow-1">{item.descripción_producto}</p>
+										<p className="mb-3 flex-grow-1">{item.descripción_producto}</p>
 										<div className="d-grid gap-2">
 											<Button as="link" to={`/menu/${item.codigo_producto}`} variant="dark" block>
 												Ver detalle y personalizar

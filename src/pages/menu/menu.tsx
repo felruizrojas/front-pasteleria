@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Button } from '../../components/common'
-import type { Producto } from '../../data/menu_datos'
-import { catalogoDatos } from '../../data/menu_datos'
+import { Button } from '@/components/common'
+import type { Producto } from '@/data/menu_datos'
+import { catalogoDatos } from '@/data/menu_datos'
 
 type OrderOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
 
@@ -46,12 +46,22 @@ const formatImagePath = (relativePath: string) => {
 const formatPrice = (value: number) =>
 	value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })
 
+const parsePrice = (value: string) => {
+	const trimmedValue = value.trim()
+	if (!trimmedValue) {
+		return null
+	}
+
+	const numericValue = Number(trimmedValue)
+	return Number.isNaN(numericValue) ? null : numericValue
+}
+
 const Menu = () => {
-	const [category, setCategory] = useState<'all' | number>('all')
-	const [product, setProduct] = useState<'all' | string>('all')
-	const [priceMin, setPriceMin] = useState('')
-	const [priceMax, setPriceMax] = useState('')
-	const [order, setOrder] = useState<OrderOption>('name-asc')
+	const [selectedCategory, setSelectedCategory] = useState<'all' | number>('all')
+	const [selectedProductCode, setSelectedProductCode] = useState<'all' | Producto['codigo_producto']>('all')
+	const [minPrice, setMinPrice] = useState('')
+	const [maxPrice, setMaxPrice] = useState('')
+	const [sortOrder, setSortOrder] = useState<OrderOption>('name-asc')
 
 	const collator = useMemo(() => new Intl.Collator('es', { sensitivity: 'base' }), [])
 
@@ -68,7 +78,10 @@ const Menu = () => {
 	)
 
 	const productOptions = useMemo(() => {
-		const scoped = category === 'all' ? allProducts : allProducts.filter((item) => item.categoriaId === category)
+		const scoped =
+			selectedCategory === 'all'
+				? allProducts
+				: allProducts.filter((item) => item.categoriaId === selectedCategory)
 		const unique = new Map<string, EnrichedProduct>()
 		scoped.forEach((item) => {
 			if (!unique.has(item.codigo_producto)) {
@@ -76,28 +89,28 @@ const Menu = () => {
 			}
 		})
 		return Array.from(unique.values()).sort((a, b) => collator.compare(a.nombre_producto, b.nombre_producto))
-	}, [allProducts, category, collator])
+	}, [allProducts, selectedCategory, collator])
 
 	const filteredProducts = useMemo(() => {
-		const minValue = priceMin.trim() ? Number(priceMin) : null
-		const maxValue = priceMax.trim() ? Number(priceMax) : null
+		const minValue = parsePrice(minPrice)
+		const maxValue = parsePrice(maxPrice)
 
 		let items = allProducts
-		if (category !== 'all') {
-			items = items.filter((item) => item.categoriaId === category)
+		if (selectedCategory !== 'all') {
+			items = items.filter((item) => item.categoriaId === selectedCategory)
 		}
-		if (product !== 'all') {
-			items = items.filter((item) => item.codigo_producto === product)
+		if (selectedProductCode !== 'all') {
+			items = items.filter((item) => item.codigo_producto === selectedProductCode)
 		}
-		if (minValue !== null && !Number.isNaN(minValue)) {
+		if (minValue !== null) {
 			items = items.filter((item) => item.precio_producto >= minValue)
 		}
-		if (maxValue !== null && !Number.isNaN(maxValue)) {
+		if (maxValue !== null) {
 			items = items.filter((item) => item.precio_producto <= maxValue)
 		}
 
 		const sorted = [...items]
-		switch (order) {
+		switch (sortOrder) {
 			case 'name-desc':
 				sorted.sort((a, b) => collator.compare(b.nombre_producto, a.nombre_producto))
 				break
@@ -113,16 +126,16 @@ const Menu = () => {
 		}
 
 		return sorted
-	}, [allProducts, category, product, priceMin, priceMax, order, collator])
+	}, [allProducts, selectedCategory, selectedProductCode, minPrice, maxPrice, sortOrder, collator])
 
 	const totalProductos = filteredProducts.length
 
 	const resetFilters = () => {
-		setCategory('all')
-		setProduct('all')
-		setPriceMin('')
-		setPriceMax('')
-		setOrder('name-asc')
+		setSelectedCategory('all')
+		setSelectedProductCode('all')
+		setMinPrice('')
+		setMaxPrice('')
+		setSortOrder('name-asc')
 	}
 
 	const handleShare = async (item: EnrichedProduct) => {
@@ -142,8 +155,8 @@ const Menu = () => {
 				await navigator.clipboard.writeText(url)
 				window.alert('Enlace copiado al portapapeles')
 			}
-		} catch (error) {
-			console.error('No fue posible compartir el producto', error)
+		} catch {
+			window.alert('No fue posible compartir el producto. Intenta nuevamente más tarde.')
 		}
 	}
 
@@ -166,11 +179,11 @@ const Menu = () => {
 							<select
 								id="categoryFilter"
 								className="form-select"
-								value={category === 'all' ? 'all' : String(category)}
-								onChange={(event) => {
-									const value = event.target.value
-									setCategory(value === 'all' ? 'all' : Number(value))
-									setProduct('all')
+									value={selectedCategory === 'all' ? 'all' : String(selectedCategory)}
+									onChange={(event) => {
+										const { value } = event.target
+										setSelectedCategory(value === 'all' ? 'all' : Number(value))
+										setSelectedProductCode('all')
 								}}
 							>
 								<option value="all">Todas</option>
@@ -188,8 +201,11 @@ const Menu = () => {
 							<select
 								id="productFilter"
 								className="form-select"
-								value={product === 'all' ? 'all' : product}
-								onChange={(event) => setProduct(event.target.value === 'all' ? 'all' : event.target.value)}
+								value={selectedProductCode === 'all' ? 'all' : selectedProductCode}
+								onChange={(event) => {
+									const { value } = event.target
+									setSelectedProductCode(value === 'all' ? 'all' : (value as Producto['codigo_producto']))
+								}}
 								disabled={productOptions.length === 0}
 							>
 								<option value="all">Todos</option>
@@ -210,8 +226,8 @@ const Menu = () => {
 								id="priceMin"
 								className="form-control"
 								placeholder="0"
-								value={priceMin}
-								onChange={(event) => setPriceMin(event.target.value)}
+								value={minPrice}
+								onChange={(event) => setMinPrice(event.target.value)}
 							/>
 						</div>
 						<div className="col-6 col-lg-2">
@@ -224,8 +240,8 @@ const Menu = () => {
 								id="priceMax"
 								className="form-control"
 								placeholder="∞"
-								value={priceMax}
-								onChange={(event) => setPriceMax(event.target.value)}
+								value={maxPrice}
+								onChange={(event) => setMaxPrice(event.target.value)}
 							/>
 						</div>
 						<div className="col-12 col-lg-2">
@@ -235,8 +251,8 @@ const Menu = () => {
 							<select
 								id="orderSelect"
 								className="form-select"
-								value={order}
-								onChange={(event) => setOrder(event.target.value as OrderOption)}
+								value={sortOrder}
+								onChange={(event) => setSortOrder(event.target.value as OrderOption)}
 							>
 								{ORDER_OPTIONS.map((option) => (
 									<option key={option.value} value={option.value}>
@@ -246,7 +262,7 @@ const Menu = () => {
 							</select>
 						</div>
 						<div className="col-12 col-lg-2 d-flex align-items-end justify-content-center justify-content-lg-start">
-							<Button type="button" className="btn-app--brand w-100" onClick={resetFilters}>
+							<Button type="button" variant="dark" className="w-100" onClick={resetFilters}>
 								Limpiar
 							</Button>
 						</div>
@@ -267,7 +283,7 @@ const Menu = () => {
 						<p className="text-muted-soft mb-4">
 							Ajusta los criterios o vuelve a mostrar toda la carta.
 						</p>
-						<Button type="button" className="btn-app--brand" onClick={resetFilters}>
+						<Button type="button" variant="dark" onClick={resetFilters}>
 							Ver carta completa
 						</Button>
 					</div>
@@ -292,13 +308,13 @@ const Menu = () => {
 										<p className="menu-card__price mb-2">{formatPrice(item.precio_producto)}</p>
 										<p className="text-muted-soft mb-3 flex-grow-1">{item.descripción_producto}</p>
 										<div className="d-grid gap-2">
-											<Button as="link" to={`/menu/${item.codigo_producto}`} className="btn-app--brand" block>
+											<Button as="link" to={`/menu/${item.codigo_producto}`} variant="dark" block>
 												Ver detalle y personalizar
 											</Button>
-											<Button type="button" className="btn-app--brand" block>
+											<Button type="button" variant="dark" block>
 												<i className="bi bi-cart-plus" aria-hidden="true" /> Añadir al carrito
 											</Button>
-											<Button type="button" className="btn-app--subtle" block onClick={() => handleShare(item)}>
+											<Button type="button" variant="outline-dark" block onClick={() => handleShare(item)}>
 												<i className="bi bi-share" aria-hidden="true" /> Compartir
 											</Button>
 										</div>

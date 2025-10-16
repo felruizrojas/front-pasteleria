@@ -1,4 +1,4 @@
-import { Button } from '../../components/common'
+import { Button } from '@/components/common'
 
 const Cart = () => (
   <section className="container py-5">

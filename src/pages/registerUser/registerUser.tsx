@@ -2,28 +2,29 @@ import { useEffect, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
-import { Button, Input } from '../../components/common'
-import { REGIONES_COMUNAS } from '../../data/region_comuna'
+import { Button, Input } from '@/components/common'
+import { logoImage } from '@/assets'
+import { REGIONES_COMUNAS } from '@/data/region_comuna'
+
+const heroImageUrl = new URL('../../assets/img/carrusel/diversidad_pasteles.jpg', import.meta.url).href
 
 const RegisterUser = () => {
 	const location = useLocation()
-	const currentPath = `${location.pathname}${location.search}`
+	const currentPath = location.pathname
 	const [regionId, setRegionId] = useState('')
 	const [comuna, setComuna] = useState('')
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
 	useEffect(() => {
-		if (typeof window === 'undefined' || typeof document === 'undefined') {
-			return
-		}
+		document.querySelectorAll('.offcanvas.show').forEach((element) => {
+			if (!(element instanceof HTMLElement)) {
+				return
+			}
 
-		const bootstrapApi = (window as typeof window & { bootstrap?: any }).bootstrap
-
-		document.querySelectorAll<HTMLElement>('.offcanvas.show').forEach((element) => {
-			const instance =
-				bootstrapApi?.Offcanvas?.getInstance?.(element) ?? bootstrapApi?.Offcanvas?.getOrCreateInstance?.(element)
-			instance?.hide?.()
+			element.classList.remove('show')
+			element.style.removeProperty('visibility')
+			element.setAttribute('aria-hidden', 'true')
 		})
 
 		document.querySelectorAll('.offcanvas-backdrop').forEach((backdrop) => backdrop.remove())
@@ -49,53 +50,59 @@ const RegisterUser = () => {
 	const comunaOptions = REGIONES_COMUNAS.find((region) => region.id === regionId)?.comunas ?? []
 
 	return (
-		<main className="register-page">
-			<div className="container-fluid px-0">
-				<div className="row g-0 flex-lg-row-reverse min-vh-100">
-					<div className="col-12 col-lg-5 register-panel border-start">
-						<div className="register-panel__inner">
-							<header className="register-panel__header">
-								<div className="d-flex align-items-center justify-content-between border-bottom pb-3">
-									<div>
-										<h1 className="h4 mb-1">
-											<i className="bi bi-person-plus me-2" aria-hidden="true" />Crear cuenta
-										</h1>
-										<p className="text-muted-soft mb-0">Completa tus datos para acceder a la experiencia completa.</p>
-									</div>
-									<Link to="/" className="btn btn-sm btn-light" aria-label="Volver al inicio">
-										<i className="bi bi-x-lg" aria-hidden="true" />
-									</Link>
+		<main className="mt-0">
+			<section
+				className="position-relative overflow-hidden text-white"
+				style={{
+					backgroundImage: `linear-gradient(180deg, rgba(33, 37, 41, 0.65), rgba(33, 37, 41, 0.65)), url(${heroImageUrl})`,
+					backgroundSize: 'cover',
+					backgroundPosition: 'center',
+				}}
+			>
+				<div className="container py-5">
+					<div className="row justify-content-center">
+						<div className="col-12 col-lg-10">
+							<div className="d-flex flex-column flex-lg-row align-items-center gap-4 text-center text-lg-start">
+								<img src={logoImage} alt="Pastelería Mil Sabores" width={140} className="rounded-pill shadow" />
+								<div>
+									<span className="badge text-bg-light text-uppercase fw-semibold mb-2 text-body">Tu pastelería favorita</span>
+									<h1 className="display-6 fw-bold mb-2 text-white">Crea tu cuenta</h1>
+									<p className="lead mb-0 text-white-50">
+										Accede a beneficios dulces, seguimiento de pedidos y novedades exclusivas.
+									</p>
 								</div>
-							</header>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
 
-							<div className="register-panel__body">
-								<form onSubmit={handleSubmit}>
-									<Input
-										name="firstName"
-										label="Primer nombre"
-										placeholder="Ej: María"
-									/>
-									<Input
-										name="secondName"
-										label="Segundo nombre (opcional)"
-										placeholder="Ej: Luisa"
-									/>
-									<Input
-										name="paternalLastName"
-										label="Apellido paterno"
-										placeholder="Ej: Pérez"
-									/>
-									<Input
-										name="maternalLastName"
-										label="Apellido materno (opcional)"
-										placeholder="Ej: González"
-									/>
-									<Input
-										name="run"
-										label="RUN"
-										placeholder="19011022K"
-										inputMode="text"
-									/>
+			<section className="py-5">
+				<div className="container">
+					<div className="row justify-content-center">
+						<div className="col-12 col-lg-8 col-xl-6">
+							<div className="bg-body border rounded-3 shadow-sm p-4 p-lg-5">
+								<header className="d-flex align-items-start justify-content-between mb-4">
+									<div>
+										<span className="badge text-bg-light text-uppercase fw-semibold mb-2">Nuevo registro</span>
+										<h2 className="h4 mb-0">
+											<i className="bi bi-person-plus me-2" aria-hidden="true" />Crear cuenta
+										</h2>
+									</div>
+									<Button as="link" to="/" size="sm" variant="light" className="border" aria-label="Volver al inicio">
+										<i className="bi bi-x-lg" aria-hidden="true" />
+									</Button>
+								</header>
+								<p className="text-muted-soft mb-4">
+									Completa tus datos para disfrutar de promociones personalizadas y un proceso de compra más ágil.
+								</p>
+
+								<form onSubmit={handleSubmit} noValidate>
+									<Input name="firstName" label="Primer nombre" placeholder="Ej: María" />
+									<Input name="secondName" label="Segundo nombre (opcional)" placeholder="Ej: Luisa" />
+									<Input name="paternalLastName" label="Apellido paterno" placeholder="Ej: Pérez" />
+									<Input name="maternalLastName" label="Apellido materno (opcional)" placeholder="Ej: González" />
+									<Input name="run" label="RUN" placeholder="19011022K" inputMode="text" />
 									<Input
 										name="birthdate"
 										label="Fecha de nacimiento (opcional)"
@@ -103,23 +110,9 @@ const RegisterUser = () => {
 										inputMode="numeric"
 										helperText="Formato: dd/mm/aaaa"
 									/>
-									<Input
-										name="phone"
-										label="Teléfono (opcional)"
-										placeholder="+56 9 1234 5678"
-										inputMode="tel"
-									/>
-									<Input
-										name="email"
-										label="Correo electrónico"
-										placeholder="usuario@dominio.com"
-										type="email"
-									/>
-									<Input
-										name="address"
-										label="Dirección"
-										placeholder="Calle 123"
-									/>
+									<Input name="phone" label="Teléfono (opcional)" placeholder="+56 9 1234 5678" inputMode="tel" />
+									<Input name="email" label="Correo electrónico" placeholder="usuario@dominio.com" type="email" />
+									<Input name="address" label="Dirección" placeholder="Calle 123" />
 
 									<div className="row g-3">
 										<div className="col-12 col-lg-6">
@@ -154,9 +147,9 @@ const RegisterUser = () => {
 												onChange={handleComunaChange}
 											>
 												<option value="">Sin selección</option>
-												{comunaOptions.map((comuna) => (
-													<option key={comuna} value={comuna}>
-														{comuna}
+												{comunaOptions.map((option) => (
+													<option key={option} value={option}>
+														{option}
 													</option>
 												))}
 											</select>
@@ -219,12 +212,7 @@ const RegisterUser = () => {
 									/>
 
 									<div className="form-check mb-4">
-										<input
-											type="checkbox"
-											className="form-check-input"
-											id="terms"
-											name="terms"
-										/>
+										<input type="checkbox" className="form-check-input" id="terms" name="terms" />
 										<label className="form-check-label" htmlFor="terms">
 											<a className="link-choco" href="/terminos">
 												Acepto los términos y condiciones
@@ -233,7 +221,7 @@ const RegisterUser = () => {
 									</div>
 
 									<div className="d-grid">
-										<Button type="submit" className="btn-app--brand" size="lg">
+										<Button type="submit" variant="dark" size="lg">
 											Crear cuenta
 										</Button>
 									</div>
@@ -250,25 +238,10 @@ const RegisterUser = () => {
 							</div>
 						</div>
 					</div>
-					<div className="col-lg-7 d-none d-lg-flex register-brand-panel">
-						<div className="register-brand-panel__inner">
-							<img
-								src={new URL('../../assets/logo_tienda.png', import.meta.url).href}
-								alt="Pastelería Mil Sabores"
-								width={140}
-								className="register-brand-panel__logo rounded-pill"
-							/>
-							<div className="register-brand-panel__copy">
-								<h2 className="h4 mb-2">Pastelería Mil Sabores</h2>
-								<p className="text-muted-soft mb-0">¡Celebra la dulzura de la vida!</p>
-							</div>
-						</div>
-					</div>
 				</div>
-			</div>
+			</section>
 		</main>
 	)
 }
 
 export default RegisterUser
-

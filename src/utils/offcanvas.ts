@@ -1,9 +1,21 @@
-const getBootstrapApi = () => {
+type BootstrapOffcanvasInstance = {
+	show?: () => void
+	hide?: () => void
+}
+
+type BootstrapApi = {
+	Offcanvas?: {
+		getInstance?: (element: HTMLElement) => BootstrapOffcanvasInstance | null | undefined
+		getOrCreateInstance?: (element: HTMLElement) => BootstrapOffcanvasInstance | null | undefined
+	}
+} | null
+
+const getBootstrapApi = (): BootstrapApi => {
 	if (typeof window === 'undefined') {
 		return null
 	}
 
-	return (window as typeof window & { bootstrap?: any }).bootstrap ?? null
+	return (window as typeof window & { bootstrap?: BootstrapApi }).bootstrap ?? null
 }
 
 const getOffcanvasInstance = (element: HTMLElement | null) => {
@@ -29,7 +41,7 @@ export const hideOffcanvas = (id: string) => {
 	const element = typeof document !== 'undefined' ? document.getElementById(id) : null
 	const instance = getOffcanvasInstance(element)
 	if (instance) {
-		instance.hide()
+		instance.hide?.()
 	} else if (element) {
 		element.classList.remove('show')
 		element.setAttribute('aria-hidden', 'true')

@@ -1,4 +1,4 @@
-import { Button, Input } from '../../components/common'
+import { Button, Input } from '@/components/common'
 
 const Contact = () => (
 	<section className="contact-page py-4">

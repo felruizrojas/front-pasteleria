@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
-import { Button, Input } from '../../components/common'
+import { Button, Input } from '@/components/common'
 
 const ResetPasswordPage = () => {
 	const [showNewPassword, setShowNewPassword] = useState(false)
@@ -76,7 +76,7 @@ const ResetPasswordPage = () => {
 								</div>
 							</div>
 
-							<Button type="submit" block className="btn-app--brand">
+							<Button type="submit" block variant="dark">
 								Restablecer contrasena
 							</Button>
 

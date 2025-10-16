@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 
-import { logoImage } from '../../assets/index.ts'
+import { logoImage } from '@/assets'
 
 interface FooterLink {
 	label: string
@@ -70,7 +70,7 @@ const Footer = () => {
 	const location = useLocation()
 
 	return (
-		<footer className="site-footer mt-5">
+		<footer className="site-footer bg-white border-top mt-5 text-body-secondary">
 			<div className="container-fluid py-5 px-4 px-lg-5">
 				<div className="row g-4">
 					<div className="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -94,14 +94,14 @@ const Footer = () => {
 								width={60}
 								className="rounded-pill me-2 flex-shrink-0"
 							/>
-							<span className="fs-5 fw-semibold text-truncate brand-script">Pasteleria Mil Sabores</span>
+							<span className="fs-5 fw-semibold text-truncate text-primary">Pasteleria Mil Sabores</span>
 						</Link>
-						<p className="text-muted-soft mb-0">Celebra la dulzura de la vida con Pasteleria 1000 Sabores.</p>
+						<p className="text-muted mb-0">Celebra la dulzura de la vida con Pasteleria 1000 Sabores.</p>
 					</div>
 
 					{footerSections.map((section) => (
 						<div className="col-12 col-sm-6 col-md-4 col-lg" key={section.title}>
-							<h6 className="fw-bold text-uppercase text-muted-soft footer-heading">{section.title}</h6>
+							<h6 className="fw-bold text-uppercase text-secondary small">{section.title}</h6>
 							{section.links ? (
 								<ul className="nav flex-column">
 									{section.links.map((link) => {

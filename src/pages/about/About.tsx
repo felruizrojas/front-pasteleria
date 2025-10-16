@@ -1,7 +1,7 @@
-import aboutHeroImage from '../../assets/img/about/vista_pasteleria_mil_sabores.jpg'
-import missionImage from '../../assets/img/about/diversos_productos.jpg'
-import visionImage from '../../assets/img/about/persona_trabajando_en_una_cocina.jpg'
-import communityImage from '../../assets/img/about/estudiante_de_reposteria_aprendiendo_en_la_cocina.jpg'
+import aboutHeroImage from '@/assets/img/about/vista_pasteleria_mil_sabores.jpg'
+import missionImage from '@/assets/img/about/diversos_productos.jpg'
+import visionImage from '@/assets/img/about/persona_trabajando_en_una_cocina.jpg'
+import communityImage from '@/assets/img/about/estudiante_de_reposteria_aprendiendo_en_la_cocina.jpg'
 
 interface StoryBlock {
 	id: string

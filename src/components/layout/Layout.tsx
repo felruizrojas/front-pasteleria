@@ -5,7 +5,7 @@ import Navbar from './Navbar'
 import LoginOffcanvas from './LoginOffcanvas'
 import Footer from './Footer'
 import ScrollToTop from './ScrollToTop'
-import { showOffcanvas } from '../../utils/offcanvas'
+import { showOffcanvas } from '@/utils/offcanvas'
 
 const Layout = () => {
 	const location = useLocation()
@@ -27,10 +27,11 @@ const Layout = () => {
 		}
 
 		showOffcanvas('offcanvasLogin')
-		const { openLogin: _openLogin, ...rest } = state
+		const restState = { ...state }
+		delete restState.openLogin
 		navigate(`${location.pathname}${location.search}`, {
 			replace: true,
-			state: Object.keys(rest).length > 0 ? rest : undefined,
+			state: Object.keys(restState).length > 0 ? restState : undefined,
 		})
 	}, [location, navigate])
 

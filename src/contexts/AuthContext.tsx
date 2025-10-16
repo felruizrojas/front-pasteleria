@@ -40,8 +40,8 @@ const readPersistedUser = (): AuthUser | null => {
 		if (parsed && parsed.id && parsed.email && parsed.role) {
 			return parsed
 		}
-	} catch (error) {
-		console.warn('Failed to read persisted user.', error)
+	} catch {
+		return null
 	}
 
 	return null

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
-import { Button, Input } from '../../components/common'
-import { logoImage } from '../../assets/index.ts'
+import { Button, Input } from '@/components/common'
+import { logoImage } from '@/assets'
 
 const Login = () => (
 	<main className="mt-0">

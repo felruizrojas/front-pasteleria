@@ -1,19 +1,21 @@
+import { Suspense, lazy } from 'react'
 import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
-import Layout from '../components/layout/Layout'
-import HomePage from '../pages/Home/Home'
-import AboutPage from '../pages/about/About'
-import ContactPage from '../pages/contact/Contact'
-import MenuPage from '../pages/menu/menu'
-import MenuDetailsPage from '../pages/menu/menu_details'
-import ProfilePage from '../pages/profile/Profile'
-import BlogPage from '../pages/blog/Blog'
-import CartPage from '../pages/cart/Cart'
-import RegisterUserPage from '../pages/registerUser/registerUser'
-import PrivacyPage from '../pages/privacy/Privacy'
-import TermsPage from '../pages/terms/Terms'
-import ResetPasswordPage from '../pages/resetPassword/ResetPassword'
-import LoginRoute from './LoginRoute'
+import LoginRoute from '@/routes/LoginRoute'
+
+const Layout = lazy(() => import('@/components/layout/Layout'))
+const HomePage = lazy(() => import('@/pages/Home/Home'))
+const AboutPage = lazy(() => import('@/pages/about/About'))
+const ContactPage = lazy(() => import('@/pages/contact/Contact'))
+const MenuPage = lazy(() => import('@/pages/menu/menu'))
+const MenuDetailsPage = lazy(() => import('@/pages/menu/menu_details'))
+const ProfilePage = lazy(() => import('@/pages/profile/Profile'))
+const BlogPage = lazy(() => import('@/pages/blog/Blog'))
+const CartPage = lazy(() => import('@/pages/cart/Cart'))
+const RegisterUserPage = lazy(() => import('@/pages/registerUser/registerUser'))
+const PrivacyPage = lazy(() => import('@/pages/privacy/Privacy'))
+const TermsPage = lazy(() => import('@/pages/terms/Terms'))
+const ResetPasswordPage = lazy(() => import('@/pages/resetPassword/ResetPassword'))
 
 const router = createBrowserRouter([
 	{
@@ -37,7 +39,17 @@ const router = createBrowserRouter([
 	{ path: '*', element: <Navigate to="/" replace /> },
 ])
 
-const AppRouter = () => <RouterProvider router={router} />
+const AppRouter = () => (
+	<Suspense
+		fallback={
+			<div className="py-5 text-center">
+				<span className="spinner-border" role="status" aria-hidden="true" />
+			</div>
+		}
+	>
+		<RouterProvider router={router} />
+	</Suspense>
+)
 
 export default AppRouter
 

@@ -19,5 +19,18 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*'],
+              message: 'Usa el alias @/ para importar módulos fuera del directorio actual.',
+            },
+          ],
+        },
+      ],
+    },
   },
 ])

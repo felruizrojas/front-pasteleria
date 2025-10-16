@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { Button } from '../../components/common'
-import type { Producto } from '../../data/menu_datos'
-import { catalogoDatos } from '../../data/menu_datos'
-import cx from '../../utils/cx'
+import { Button } from '@/components/common'
+import type { Producto } from '@/data/menu_datos'
+import { catalogoDatos } from '@/data/menu_datos'
+import cx from '@/utils/cx'
 
 const KEY_CART = 'carrito'
 const KEY_MSGS = 'mensajesCarrito'

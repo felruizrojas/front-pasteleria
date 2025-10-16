@@ -3,15 +3,34 @@ import { forwardRef } from 'react'
 import type { LinkProps } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 
-import cx from '../../utils/cx'
+import cx from '@/utils/cx'
 
 type ButtonSize = 'sm' | 'lg'
+type ButtonVariant =
+	| 'primary'
+	| 'secondary'
+	| 'success'
+	| 'danger'
+	| 'warning'
+	| 'info'
+	| 'light'
+	| 'dark'
+	| 'link'
+	| 'outline-primary'
+	| 'outline-secondary'
+	| 'outline-success'
+	| 'outline-danger'
+	| 'outline-warning'
+	| 'outline-info'
+	| 'outline-light'
+	| 'outline-dark'
 
 type BaseProps = {
 	children: ReactNode
 	size?: ButtonSize
 	block?: boolean
 	className?: string
+	variant?: ButtonVariant
 }
 
 type NativeButtonProps = BaseProps & ButtonHTMLAttributes<HTMLButtonElement> & { as?: 'button'; href?: never; to?: never }
@@ -21,11 +40,11 @@ type RouterButtonProps = BaseProps & Omit<LinkProps, 'className'> & { as: 'link'
 type ButtonProps = NativeButtonProps | AnchorButtonProps | RouterButtonProps
 
 const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
-	({ children, size, block, className, as = 'button', ...rest }, ref) => {
+	({ children, size, block, className, variant = 'dark', as = 'button', ...rest }, ref) => {
 		const baseClass = cx(
 			'btn',
-			'btn-app',
-			size ? `btn-app--${size}` : null,
+			variant ? `btn-${variant}` : null,
+			size ? `btn-${size}` : null,
 			block ? 'w-100' : null,
 			className,
 		)

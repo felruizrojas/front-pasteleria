@@ -1,8 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom'
 
-import { Button } from '../common'
-import { logoImage } from '../../assets/index.ts'
-import cx from '../../utils/cx'
+import { Button } from '@/components/common'
+import { logoImage } from '@/assets'
+import cx from '@/utils/cx'
 
 type PrimaryLink = {
 	label: string

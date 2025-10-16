@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useCallback } from 'react'
 
-import { Button, Input } from '../common'
-import { hideOffcanvas } from '../../utils/offcanvas'
+import { Button, Input } from '@/components/common'
+import { hideOffcanvas } from '@/utils/offcanvas'
 
 const LoginOffcanvas = () => {
 	const handleNavigate = useCallback(() => {

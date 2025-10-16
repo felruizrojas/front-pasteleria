@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, ReactNode } from 'react'
 import { forwardRef, useId } from 'react'
 
-import cx from '../../utils/cx'
+import cx from '@/utils/cx'
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 	label?: ReactNode

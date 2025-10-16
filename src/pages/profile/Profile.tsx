@@ -2,9 +2,9 @@ import { useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import { Button, Input } from '../../components/common'
-import { logoImage as defaultAvatar } from '../../assets'
-import { REGIONES_COMUNAS } from '../../data/region_comuna'
+import { Button, Input } from '@/components/common'
+import { logoImage as defaultAvatar } from '@/assets'
+import { REGIONES_COMUNAS } from '@/data/region_comuna'
 
 const Profile = () => {
 	const [selectedRegionId, setSelectedRegionId] = useState('')
@@ -81,7 +81,7 @@ const Profile = () => {
 											<i className="bi bi-image me-1" aria-hidden="true" /> Cambiar foto
 											<input type="file" accept="image/*" hidden onChange={handleAvatarChange} />
 										</label>
-										<Button type="button" className="btn-outline-danger" onClick={handleAvatarReset}>
+										<Button type="button" variant="outline-danger" onClick={handleAvatarReset}>
 											<i className="bi bi-trash me-1" aria-hidden="true" /> Quitar foto
 										</Button>
 									</div>
@@ -96,10 +96,10 @@ const Profile = () => {
 									</div>
 
 									<div className="d-grid gap-2 mt-3">
-										<Button as="link" to="/cart" className="btn-outline-primary">
+										<Button as="link" to="/cart" variant="outline-primary">
 											<i className="bi bi-receipt me-1" aria-hidden="true" /> Mis pedidos
 										</Button>
-										<Button as="link" to="/login" className="btn-outline-dark" state={{ from: currentPath }}>
+										<Button as="link" to="/login" variant="outline-dark" state={{ from: currentPath }}>
 											<i className="bi bi-box-arrow-right me-1" aria-hidden="true" /> Cerrar sesión
 										</Button>
 									</div>
@@ -192,7 +192,7 @@ const Profile = () => {
 										/>
 									</div>
 									<div className="d-flex flex-wrap gap-2 mt-4">
-										<Button type="submit" className="btn-app--brand">
+										<Button type="submit">
 											<i className="bi bi-save2 me-1" aria-hidden="true" /> Guardar cambios
 										</Button>
 									</div>

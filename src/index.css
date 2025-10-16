@@ -77,6 +77,17 @@ svg {
     padding: 2rem;
 }
 
+.product-card {
+    transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.product-card:hover,
+.product-card:focus-within {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.14);
+    filter: brightness(0.98);
+}
+
 .form-control,
 .form-select {
     border-radius: var(--radius);
@@ -178,6 +189,7 @@ pre {
     border-radius: var(--radius);
     padding: 1rem 1.25rem;
     max-width: min(420px, 90vw);
+    background-color: rgba(191, 226, 213, 0.92);
 }
 
 .menu-toolbar {
@@ -187,22 +199,6 @@ pre {
 
 .menu-empty {
     border-radius: var(--radius-lg);
-}
-
-.menu-card {
-    border-radius: var(--radius-lg);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    height: 100%;
-}
-
-.menu-card__body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    padding: 1.5rem;
-    height: 100%;
 }
 
 .object-fit-cover {

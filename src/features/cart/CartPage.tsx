@@ -7,7 +7,7 @@ const Cart = () => (
       <p className="mb-3">
         Aun no tienes productos seleccionados. Explora nuestra carta para agregar tus postres favoritos.
       </p>
-      <Button as="link" to="/menu">
+      <Button as="link" to="/menu" variant="mint">
         Ir a la carta
       </Button>
     </div>

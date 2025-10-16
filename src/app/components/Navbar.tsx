@@ -3,21 +3,8 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { Button } from '@/shared/components/common'
 import { logoImage } from '@/assets'
 import cx from '@/shared/utils/cx'
-
-type PrimaryLink = {
-	label: string
-	to: string
-	icon?: string
-	ariaLabel?: string
-}
-
-type SecondaryLink = {
-	label: string
-	to: string
-	icon: string
-	ariaLabel?: string
-	external?: boolean
-}
+import MobileNav from './MobileNav'
+import type { PrimaryLink, SecondaryLink } from './navbar.types'
 
 const primaryLinks: PrimaryLink[] = [
 	{ label: 'Inicio', to: '/', icon: 'bi-house-door', ariaLabel: 'Inicio' },
@@ -57,42 +44,40 @@ const renderPrimaryLink = (link: PrimaryLink, currentPath: string) => (
 	</NavLink>
 )
 
-const renderMobileButton = (link: PrimaryLink | SecondaryLink, index: number, currentPath: string) => {
-	const target = link.to
-	const key = `${link.label}-${index}`
-	const isExternal = 'external' in link && Boolean(link.external)
-
-	if (isExternal) {
-		return (
-			<Button key={key} as="a" href={target} target="_blank" rel="noreferrer" block>
-				{link.label}
-			</Button>
-		)
-	}
-
-	const isActive = target === '/' ? currentPath === target : currentPath.startsWith(target)
-
-	return (
-		<Button
-			key={key}
-			as="link"
-			to={target}
-			block
-			className={isActive ? 'active' : undefined}
-			onClick={target === '/' && currentPath === '/' ? (event) => {
-				event.preventDefault()
-				if (typeof window !== 'undefined') {
-					window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-				}
-			} : undefined}
-		>
-			{link.label}
-		</Button>
-	)
-}
-
 const Navbar = () => {
 	const { pathname } = useLocation()
+
+	const closeMobileMenu = () => {
+		if (typeof window === 'undefined') {
+			return
+		}
+
+		const nav = document.getElementById('mainNav')
+		if (!nav) {
+			return
+		}
+
+		const bootstrapApi = (window as typeof window & {
+			bootstrap?: {
+				Collapse?: {
+					getInstance: (element: Element) => { hide: () => void } | null
+				}
+			}
+		}).bootstrap
+
+		const collapseInstance = bootstrapApi?.Collapse?.getInstance(nav)
+		collapseInstance?.hide()
+
+		if (!collapseInstance) {
+			nav.classList.remove('show')
+		}
+
+		const toggler = document.querySelector<HTMLButtonElement>('[data-bs-target="#mainNav"]')
+		if (toggler) {
+			toggler.classList.add('collapsed')
+			toggler.setAttribute('aria-expanded', 'false')
+		}
+	}
 
 	return (
 		<nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top primary-nav shadow-sm">
@@ -114,11 +99,11 @@ const Navbar = () => {
 				>
 					<img
 						src={logoImage}
-						alt="Pasteleria Mil Sabores"
+						alt="Pastelería Mil Sabores"
 						width={80}
 						className="rounded-pill me-2 logo"
 					/>
-					<span className="ms-2 fw-semibold d-none d-lg-inline">Pasteleria Mil Sabores</span>
+					<span className="ms-2 fw-semibold d-none d-lg-inline brand-name">Pastelería Mil Sabores</span>
 				</NavLink>
 
 				<button
@@ -169,23 +154,19 @@ const Navbar = () => {
 							</li>
 						))}
 						<li className="nav-item ms-2">
-							<Button type="button" size="sm" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLogin">
+							<Button type="button" size="sm" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLogin" variant="strawberry">
 								Iniciar sesion
 							</Button>
 						</li>
 					</ul>
 
-					<div className="d-lg-none w-100">
-						<div className="d-grid gap-2 mt-3">
-							{primaryLinks.map((link, index) => renderMobileButton(link, index, pathname))}
-							{secondaryLinks.map((link, index) =>
-								renderMobileButton(link, index + primaryLinks.length, pathname),
-							)}
-							<Button type="button" block data-bs-toggle="offcanvas" data-bs-target="#offcanvasLogin">
-								Iniciar sesion
-							</Button>
-						</div>
-					</div>
+					<MobileNav
+						primaryLinks={primaryLinks}
+						secondaryLinks={secondaryLinks}
+						currentPath={pathname}
+						onNavigate={closeMobileMenu}
+						loginLabel="Iniciar sesion"
+					/>
 				</div>
 			</div>
 		</nav>

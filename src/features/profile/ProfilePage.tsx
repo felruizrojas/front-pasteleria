@@ -77,11 +77,11 @@ const Profile = () => {
 									/>
 
 									<div className="d-grid gap-2">
-										<label className="btn btn-outline-secondary mb-0">
+										<label className="btn btn-pastel btn-mint mb-0">
 											<i className="bi bi-image me-1" aria-hidden="true" /> Cambiar foto
 											<input type="file" accept="image/*" hidden onChange={handleAvatarChange} />
 										</label>
-										<Button type="button" variant="outline-danger" onClick={handleAvatarReset}>
+										<Button type="button" variant="mint" onClick={handleAvatarReset}>
 											<i className="bi bi-trash me-1" aria-hidden="true" /> Quitar foto
 										</Button>
 									</div>
@@ -96,10 +96,10 @@ const Profile = () => {
 									</div>
 
 									<div className="d-grid gap-2 mt-3">
-										<Button as="link" to="/cart" variant="outline-primary">
+										<Button as="link" to="/cart" variant="mint">
 											<i className="bi bi-receipt me-1" aria-hidden="true" /> Mis pedidos
 										</Button>
-										<Button as="link" to="/login" variant="outline-dark" state={{ from: currentPath }}>
+										<Button as="link" to="/login" variant="strawberry" state={{ from: currentPath }}>
 											<i className="bi bi-box-arrow-right me-1" aria-hidden="true" /> Cerrar sesión
 										</Button>
 									</div>
@@ -192,7 +192,7 @@ const Profile = () => {
 										/>
 									</div>
 									<div className="d-flex flex-wrap gap-2 mt-4">
-										<Button type="submit">
+										<Button type="submit" variant="strawberry">
 											<i className="bi bi-save2 me-1" aria-hidden="true" /> Guardar cambios
 										</Button>
 									</div>

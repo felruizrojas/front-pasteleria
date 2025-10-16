@@ -8,7 +8,7 @@ const PrivacyPage = () => (
         <section className="mb-4">
             <h2 className="h4">1. Responsable del tratamiento</h2>
             <p>
-                <strong>Pasteleria Mil Sabores</strong>, con domicilio en Concepcion, Chile, es responsable del tratamiento de los datos personales recopilados a traves de este sitio web.
+                <strong>Pastelería Mil Sabores</strong>, con domicilio en Concepcion, Chile, es responsable del tratamiento de los datos personales recopilados a traves de este sitio web.
             </p>
         </section>
 

@@ -57,7 +57,8 @@ const RegisterUser = () => {
 								<img src={logoImage} alt="Pastelería Mil Sabores" width={140} className="rounded-pill shadow" />
 								<div>
 									<span className="badge text-uppercase fw-semibold mb-2">Tu pastelería favorita</span>
-									<h1 className="display-6 fw-bold mb-2">Crea tu cuenta</h1>
+									<h1 className="mb-2 brand-name">Pastelería Mil Sabores</h1>
+									<h2 className="h4 mb-2">Crea tu cuenta</h2>
 									<p className="lead mb-0">
 										Accede a beneficios dulces, seguimiento de pedidos y novedades exclusivas.
 									</p>
@@ -80,7 +81,7 @@ const RegisterUser = () => {
 											<i className="bi bi-person-plus me-2" aria-hidden="true" />Crear cuenta
 										</h2>
 									</div>
-									<Button as="link" to="/" size="sm" variant="light" className="border" aria-label="Volver al inicio">
+									<Button as="link" to="/" size="sm" variant="mint" aria-label="Volver al inicio">
 										<i className="bi bi-x-lg" aria-hidden="true" />
 									</Button>
 								</header>
@@ -161,7 +162,7 @@ const RegisterUser = () => {
 											/>
 											<button
 												type="button"
-												className="btn btn-outline-dark"
+												className="btn btn-pastel btn-mint"
 												onClick={() => setShowPassword((value) => !value)}
 												aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
 											>
@@ -186,7 +187,7 @@ const RegisterUser = () => {
 											/>
 											<button
 												type="button"
-												className="btn btn-outline-dark"
+												className="btn btn-pastel btn-mint"
 												onClick={() => setShowConfirmPassword((value) => !value)}
 												aria-label={showConfirmPassword ? 'Ocultar confirmación' : 'Mostrar confirmación'}
 											>
@@ -212,7 +213,7 @@ const RegisterUser = () => {
 									</div>
 
 									<div className="d-grid">
-										<Button type="submit" variant="dark" size="lg">
+										<Button type="submit" variant="strawberry" size="lg">
 											Crear cuenta
 										</Button>
 									</div>

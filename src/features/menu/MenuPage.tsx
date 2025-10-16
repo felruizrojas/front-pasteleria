@@ -262,7 +262,7 @@ const Menu = () => {
 							</select>
 						</div>
 						<div className="col-12 col-lg-2 d-flex align-items-end justify-content-center justify-content-lg-start">
-							<Button type="button" variant="dark" className="w-100" onClick={resetFilters}>
+							<Button type="button" variant="mint" className="w-100" onClick={resetFilters}>
 								Limpiar
 							</Button>
 						</div>
@@ -283,7 +283,7 @@ const Menu = () => {
 						<p className="mb-4">
 							Ajusta los criterios o vuelve a mostrar toda la carta.
 						</p>
-						<Button type="button" variant="dark" onClick={resetFilters}>
+						<Button type="button" variant="mint" onClick={resetFilters}>
 							Ver carta completa
 						</Button>
 					</div>
@@ -291,7 +291,7 @@ const Menu = () => {
 					<div className="row g-4">
 						{filteredProducts.map((item) => (
 							<div className="col-12 col-md-6 col-lg-4" key={item.codigo_producto}>
-								<div className="menu-card">
+								<div className="card card-soft shadow-soft h-100 product-card">
 									<Link to={`/menu/${item.codigo_producto}`} className="ratio ratio-4x3">
 										<img
 											src={formatImagePath(item.imagen_producto)}
@@ -300,21 +300,19 @@ const Menu = () => {
 											loading="lazy"
 										/>
 									</Link>
-									<div className="menu-card__body">
-										<p className="menu-card__category mb-1 text-uppercase">
-											{item.categoriaNombre}
-										</p>
-										<h3 className="h5 mb-1">{item.nombre_producto}</h3>
-										<p className="menu-card__price mb-2">{formatPrice(item.precio_producto)}</p>
-										<p className="mb-3 flex-grow-1">{item.descripción_producto}</p>
+									<div className="card-body d-flex flex-column gap-2 text-center">
+										<p className="text-uppercase small text-muted mb-1">{item.categoriaNombre}</p>
+										<h3 className="h5 mb-0">{item.nombre_producto}</h3>
+										<p className="fw-semibold mb-0">{formatPrice(item.precio_producto)}</p>
+										<p className="mb-3 text-muted flex-grow-1">{item.descripción_producto}</p>
 										<div className="d-grid gap-2">
-											<Button as="link" to={`/menu/${item.codigo_producto}`} variant="dark" block>
+											<Button as="link" to={`/menu/${item.codigo_producto}`} variant="strawberry" block>
 												Ver detalle y personalizar
 											</Button>
-											<Button type="button" variant="dark" block>
+											<Button type="button" variant="mint" block>
 												<i className="bi bi-cart-plus" aria-hidden="true" /> Añadir al carrito
 											</Button>
-											<Button type="button" variant="outline-dark" block onClick={() => handleShare(item)}>
+											<Button type="button" variant="mint" block onClick={() => handleShare(item)}>
 												<i className="bi bi-share" aria-hidden="true" /> Compartir
 											</Button>
 										</div>

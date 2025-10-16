@@ -57,7 +57,7 @@ const LoginOffcanvas = () => {
 						</Link>
 					</div>
 
-					<Button type="submit" block className="mb-2">
+					<Button type="submit" block className="mb-2" variant="strawberry">
 						Ingresar
 					</Button>
 

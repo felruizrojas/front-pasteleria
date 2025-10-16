@@ -45,9 +45,9 @@ const carouselData: CarouselItem[] = [
 		image: new URL('../../assets/images/carrusel/diversidad_pasteles.jpg', import.meta.url).href,
 		alt: 'Vitrina con variedad de pasteles',
 		overlay: {
-			title: 'TRIVIA 1000 SABORES',
-			subtitle: 'Siguenos en Instagram y participa en nuestra trivia',
-			highlight: 'Gana un descuento de por vida en tus compras!',
+			title: 'TRIVIA MIL SABORES',
+			subtitle: 'Síguenos en Instagram y participa en nuestra trivia semanal',
+			highlight: 'Gana un descuento permanente en tus compras',
 		},
 		caption: {
 			ctaLabel: 'Ir a Instagram',
@@ -145,11 +145,18 @@ const Home = () => {
 								{item.caption ? (
 									<div className="carousel-caption">
 										{item.caption.external ? (
-											<Button as="a" href={item.caption.to} size="lg" target="_blank" rel="noreferrer">
+											<Button
+												as="a"
+												href={item.caption.to}
+												size="lg"
+												variant="strawberry"
+												target="_blank"
+												rel="noreferrer"
+											>
 												{item.caption.ctaLabel}
 											</Button>
 										) : (
-											<Button as="link" to={item.caption.to} size="lg">
+											<Button as="link" to={item.caption.to} size="lg" variant="strawberry">
 												{item.caption.ctaLabel}
 											</Button>
 										)}
@@ -192,7 +199,7 @@ const Home = () => {
 							<div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
 								{featuredProducts.map((producto) => (
 									<div className="col" key={producto.codigo_producto}>
-										<div className="card card-soft shadow-soft h-100">
+										<div className="card card-soft shadow-soft h-100 product-card">
 											<Link to={`/menu/${producto.codigo_producto}`} className="ratio ratio-4x3">
 												<img
 													src={formatImagePath(producto.imagen_producto)}
@@ -213,7 +220,7 @@ const Home = () => {
 								))}
 							</div>
 							<div className="text-center mt-4">
-								<Button as="link" to="/menu" size="lg" variant="dark">
+								<Button as="link" to="/menu" size="lg" variant="strawberry">
 									Ver carta completa
 								</Button>
 							</div>

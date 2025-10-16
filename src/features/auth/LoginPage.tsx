@@ -10,8 +10,8 @@ const Login = () => (
 				<div className="row g-0 min-vh-75">
 					<div className="col-12 col-lg-7 d-none d-lg-flex align-items-center justify-content-center">
 						<div className="text-center px-4">
-							<img src={logoImage} alt="Pasteleria Mil Sabores" width={140} className="rounded-pill mb-3" />
-							<h1 className="h3 fw-bold mb-1">Pasteleria Mil Sabores</h1>
+							<img src={logoImage} alt="Pastelería Mil Sabores" width={140} className="rounded-pill mb-3" />
+							<h1 className="mb-1 brand-name">Pastelería Mil Sabores</h1>
 							<p className="mb-0">Celebra la dulzura de la vida</p>
 						</div>
 					</div>
@@ -23,7 +23,7 @@ const Login = () => (
 									<h5 className="mb-0">
 										<i className="bi bi-person me-2" aria-hidden /> Iniciar sesion
 									</h5>
-									<Button as="link" to="/" size="sm">
+									<Button as="link" to="/" size="sm" variant="mint">
 										<i className="bi bi-x-lg" aria-hidden />
 										<span className="visually-hidden">Cerrar</span>
 									</Button>
@@ -60,7 +60,7 @@ const Login = () => (
 										</Link>
 									</div>
 
-									<Button type="submit" block className="mb-2">
+									<Button type="submit" block className="mb-2" variant="strawberry">
 										Ingresar
 									</Button>
 

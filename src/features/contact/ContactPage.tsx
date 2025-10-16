@@ -25,7 +25,7 @@ const Contact = () => (
 							placeholder="Maximo 500 caracteres"
 						/>
 					</div>
-					<Button type="submit" block>
+					<Button type="submit" block variant="strawberry">
 						Enviar
 					</Button>
 				</form>

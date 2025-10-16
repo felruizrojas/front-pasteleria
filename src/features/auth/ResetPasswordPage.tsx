@@ -45,7 +45,7 @@ const ResetPasswordPage = () => {
 									/>
 									<button
 										type="button"
-										className="btn btn-outline-dark"
+										className="btn btn-pastel btn-mint"
 										onClick={() => setShowNewPassword((value) => !value)}
 										aria-label={showNewPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
 									>
@@ -67,7 +67,7 @@ const ResetPasswordPage = () => {
 									/>
 									<button
 										type="button"
-										className="btn btn-outline-dark"
+										className="btn btn-pastel btn-mint"
 										onClick={() => setShowConfirmPassword((value) => !value)}
 										aria-label={showConfirmPassword ? 'Ocultar confirmacion' : 'Mostrar confirmacion'}
 									>
@@ -76,14 +76,14 @@ const ResetPasswordPage = () => {
 								</div>
 							</div>
 
-							<Button type="submit" block variant="dark">
+							<Button type="submit" block variant="strawberry">
 								Restablecer contrasena
 							</Button>
 
 							<p className="text-center mt-4 mb-0">
 								<small>
 									Recuerdas tu contrasena?{' '}
-									<Link to="/login" state={{ from: currentPath }}>
+									<Link to="/login" className="link-body-emphasis" state={{ from: currentPath }}>
 										Volver al inicio de sesion
 									</Link>
 								</small>

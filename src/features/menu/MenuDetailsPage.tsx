@@ -213,13 +213,13 @@ const MenuDetails = () => {
 
 	if (!producto) {
 		return (
-			<section className="container py-5">
+				<section className="container py-5">
 				<div className="card card-soft shadow-soft p-5 text-center">
 					<h1 className="section-title mb-3">Producto no encontrado</h1>
 					<p className="mb-4">
 						Es posible que el código ingresado no exista o que el producto haya sido actualizado.
 					</p>
-					<Button as="link" to="/menu">
+						<Button as="link" to="/menu" variant="mint">
 						Volver a la carta
 					</Button>
 				</div>
@@ -318,7 +318,7 @@ const MenuDetails = () => {
 									{mensaje.length}/{MAX_MESSAGE_LENGTH} caracteres
 								</div>
 							</div>
-							<Button type="button" size="lg" onClick={handleAddToCart}>
+							<Button type="button" size="lg" variant="mint" onClick={handleAddToCart}>
 								Añadir al carrito
 							</Button>
 							{feedback ? (
@@ -360,7 +360,7 @@ const MenuDetails = () => {
 									<div className="card-body d-flex flex-column gap-2">
 										<h3 className="h6 mb-0">{item.nombre_producto}</h3>
 										<p className="mb-0">{formatPrice(item.precio_producto)}</p>
-										<Button as="link" to={`/menu/${item.codigo_producto}`} size="sm">
+										<Button as="link" to={`/menu/${item.codigo_producto}`} size="sm" variant="strawberry">
 											Ver detalle
 										</Button>
 									</div>

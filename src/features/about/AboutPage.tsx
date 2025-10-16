@@ -17,12 +17,12 @@ const storyBlocks: StoryBlock[] = [
 		id: 'about',
 		title: 'Quienes somos',
 		description: [
-			'En Pasteleria 1000 Sabores celebramos 50 anos de historia endulzando momentos unicos y siendo un referente de la reposteria chilena.',
+			'En Pastelería Mil Sabores celebramos 50 anos de historia endulzando momentos unicos y siendo un referente de la reposteria chilena.',
 			'Desde nuestro record Guinness en 1995, cuando colaboramos en la creacion de la torta mas grande del mundo, mantenemos viva la tradicion de innovar y sorprender con cada creacion.',
 			'Hoy renovamos nuestro sistema de ventas online para que nuestros clientes disfruten de una experiencia moderna y accesible, llevando la dulzura directamente a sus hogares.',
 		],
 		image: aboutHeroImage,
-		imageAlt: 'Tienda Pasteleria Mil Sabores',
+		imageAlt: 'Tienda Pastelería Mil Sabores',
 	},
 	{
 		id: 'mission',
@@ -80,7 +80,7 @@ const About = () => (
 
 			<div className="container">
 				<div className="mt-4 p-5 card-soft text-center">
-					<h3 className="mb-3">Celebra la dulzura de la vida con Pasteleria 1000 Sabores</h3>
+					<h3 className="mb-3">Celebra la dulzura de la vida con Pastelería Mil Sabores</h3>
 					<h5 className="mb-1">Estamos emocionados de compartir nuestras delicias contigo.</h5>
 					<h5>Descubre, saborea y crea momentos inolvidables con nosotros.</h5>
 				</div>

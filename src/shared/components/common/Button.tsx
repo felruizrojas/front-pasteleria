@@ -6,24 +6,7 @@ import { Link } from 'react-router-dom'
 import cx from '@/shared/utils/cx'
 
 type ButtonSize = 'sm' | 'lg'
-type ButtonVariant =
-	| 'primary'
-	| 'secondary'
-	| 'success'
-	| 'danger'
-	| 'warning'
-	| 'info'
-	| 'light'
-	| 'dark'
-	| 'link'
-	| 'outline-primary'
-	| 'outline-secondary'
-	| 'outline-success'
-	| 'outline-danger'
-	| 'outline-warning'
-	| 'outline-info'
-	| 'outline-light'
-	| 'outline-dark'
+type ButtonVariant = 'strawberry' | 'mint'
 
 type BaseProps = {
 	children: ReactNode
@@ -40,10 +23,14 @@ type RouterButtonProps = BaseProps & Omit<LinkProps, 'className'> & { as: 'link'
 type ButtonProps = NativeButtonProps | AnchorButtonProps | RouterButtonProps
 
 const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
-	({ children, size, block, className, variant = 'dark', as = 'button', ...rest }, ref) => {
+	({ children, size, block, className, variant = 'strawberry', as = 'button', ...rest }, ref) => {
+		const variantClasses: Record<ButtonVariant, string> = {
+			strawberry: 'btn-pastel btn-strawberry',
+			mint: 'btn-pastel btn-mint',
+		}
 		const baseClass = cx(
 			'btn',
-			variant ? `btn-${variant}` : null,
+			variantClasses[variant],
 			size ? `btn-${size}` : null,
 			block ? 'w-100' : null,
 			className,

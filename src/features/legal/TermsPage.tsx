@@ -8,7 +8,7 @@ const TermsPage = () => (
 		<section className="mb-4">
 			<h2 className="h4">1. Aceptacion</h2>
 			<p>
-				Al usar este sitio y comprar en <strong>Pasteleria Mil Sabores</strong> aceptas integramente estos terminos.
+				Al usar este sitio y comprar en <strong>Pastelería Mil Sabores</strong> aceptas integramente estos terminos.
 			</p>
 		</section>
 

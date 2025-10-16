@@ -1,62 +1,9 @@
 :root {
-    color-scheme: light;
-    --color-cream: #fff5e1;
-    --color-pink: #ffc0cb;
-    --color-pink-strong: #ff8fb0;
-    --color-cocoa: #8b4513;
-    --color-text: #5d4037;
-    --color-text-soft: #7a574a;
-    --color-surface: #ffffff;
-    --color-muted: #f5e3cf;
-    --color-border: #ead9c2;
-    --color-success: #6bbd6b;
-    --color-warning: #f3a847;
-    --color-danger: #df5959;
-    --shadow: 0 16px 40px rgba(93, 64, 55, 0.12);
-    --shadow-soft: 0 6px 16px rgba(93, 64, 55, 0.08);
     --radius-lg: 18px;
     --radius: 14px;
     --radius-sm: 10px;
     --nav-h: 80px;
     --transition-base: 200ms ease;
-
-    --bs-body-bg: var(--color-cream);
-    --bs-body-color: var(--color-text);
-    --bs-link-color: var(--color-cocoa);
-    --bs-link-hover-color: var(--color-pink-strong);
-    --bs-primary: var(--color-pink);
-    --bs-primary-rgb: 255, 192, 203;
-    --bs-success: var(--color-success);
-    --bs-warning: var(--color-warning);
-    --bs-danger: var(--color-danger);
-    --bs-border-radius-lg: var(--radius-lg);
-    --bs-border-radius: var(--radius);
-    --bs-border-radius-sm: var(--radius-sm);
-}
-
-[data-theme='dark'] {
-    color-scheme: dark;
-    --color-cream: #201715;
-    --color-pink: #ff80a6;
-    --color-pink-strong: #ff9fbb;
-    --color-cocoa: #f8d6c1;
-    --color-text: #f6e8dd;
-    --color-text-soft: #d9c1b4;
-    --color-surface: #2a1e1c;
-    --color-muted: #382724;
-    --color-border: #4a322f;
-    --color-success: #73d67a;
-    --color-warning: #ffba63;
-    --color-danger: #ff8a8a;
-    --shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
-    --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.24);
-
-    --bs-body-bg: var(--color-cream);
-    --bs-body-color: var(--color-text);
-    --bs-link-color: var(--color-pink-strong);
-    --bs-link-hover-color: var(--color-cocoa);
-    --bs-primary: var(--color-pink);
-    --bs-primary-rgb: 255, 128, 166;
 }
 
 *,
@@ -67,12 +14,10 @@
 
 html,
 body {
-    padding: 0;
     margin: 0;
+    padding: 0;
     font-family: 'Lato', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     min-height: 100%;
-    background: var(--color-cream);
-    color: var(--color-text);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -94,26 +39,12 @@ svg {
 }
 
 a {
-    color: var(--color-cocoa);
     text-decoration: none;
     transition: color var(--transition-base);
 }
 
-a:hover,
-a:focus-visible {
-    color: var(--color-pink-strong);
-}
-
 button {
     font-family: inherit;
-}
-
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-    outline: 2px solid var(--color-pink-strong);
-    outline-offset: 2px;
 }
 
 .app-shell {
@@ -157,7 +88,6 @@ h6,
     font-family: 'Pacifico', 'Lato', 'Segoe UI', sans-serif;
     font-weight: 400;
     letter-spacing: 0.03em;
-    color: var(--color-cocoa);
 }
 
 .footer-heading {
@@ -173,94 +103,30 @@ h6,
 
 .section-title {
     font-size: clamp(1.75rem, 2.6vw, 2.5rem);
-    color: var(--color-cocoa);
     font-weight: 700;
     letter-spacing: 0.5px;
     margin-bottom: 1.5rem;
 }
 
 .card-soft {
-    background: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: 2rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--color-border);
-}
-
-.text-muted-soft {
-    color: var(--color-text-soft);
-}
-
-.brand-accent {
-    color: var(--color-pink-strong);
-}
-
-.brand-gradient {
-    background: linear-gradient(135deg, var(--color-pink) 0%, var(--color-pink-strong) 45%, var(--color-cocoa) 100%);
-    color: var(--color-surface);
-}
-
-.shadow-soft {
-    box-shadow: var(--shadow-soft);
-}
-
-/* Customise Bootstrap buttons to match brand palette */
-.btn-dark {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: var(--color-cocoa);
-    --bs-btn-border-color: var(--color-cocoa);
-    --bs-btn-hover-bg: #6f3410;
-    --bs-btn-hover-border-color: #6f3410;
-    --bs-btn-active-bg: #59280c;
-    --bs-btn-active-border-color: #59280c;
-    --bs-btn-focus-shadow-rgb: 139, 69, 19;
-}
-
-.btn-outline-dark {
-    --bs-btn-color: var(--color-cocoa);
-    --bs-btn-border-color: var(--color-cocoa);
-    --bs-btn-hover-bg: var(--color-cocoa);
-    --bs-btn-hover-border-color: var(--color-cocoa);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-active-bg: #59280c;
-    --bs-btn-active-border-color: #59280c;
-    --bs-btn-focus-shadow-rgb: 139, 69, 19;
 }
 
 .form-control,
 .form-select {
     border-radius: var(--radius);
-    border-color: var(--color-border);
     padding: 0.75rem 1rem;
-    background-color: var(--color-surface);
-    color: var(--color-text);
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--color-pink);
-    box-shadow: 0 0 0 0.2rem rgba(255, 192, 203, 0.35);
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
-    background: var(--color-surface);
-}
-
-thead {
-    background: var(--color-muted);
-    color: var(--color-cocoa);
-}
-
-tbody tr + tr {
-    border-top: 1px solid var(--color-border);
 }
 
 code,
 pre {
     font-family: 'Source Code Pro', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    background: var(--color-muted);
     padding: 0.25rem 0.5rem;
     border-radius: var(--radius-sm);
 }
@@ -275,50 +141,12 @@ pre {
     }
 }
 
-.login-panel {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border-left: 1px solid var(--color-border);
-}
-
 .login-panel .btn {
     border-radius: var(--radius);
 }
 
-.login-panel .link-secondary:hover {
-    color: var(--color-pink-strong);
-}
-
-.site-footer {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border-top: 1px solid var(--color-border);
-}
-
-.site-footer h1,
-.site-footer h2,
-.site-footer h3,
-.site-footer h4,
-.site-footer h5,
-.site-footer h6 {
-    font-family: 'Lato', 'Segoe UI', sans-serif;
-}
-
 .site-footer .nav-link {
     transition: color var(--transition-base);
-}
-
-.site-footer .nav-link:hover,
-.site-footer .nav-link:focus-visible {
-    color: var(--color-pink-strong);
-}
-
-.site-footer hr {
-    opacity: 0.3;
-}
-
-.site-footer small {
-    font-weight: 500;
 }
 
 .hero-carousel {
@@ -352,7 +180,6 @@ pre {
     font-weight: 800;
     padding: clamp(0.55rem, 0.9vw, 0.9rem) clamp(1rem, 2.4vw, 2rem);
     border-radius: var(--radius-sm);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .menu-gallery__thumbs {
@@ -365,12 +192,10 @@ pre {
 .menu-gallery__thumb {
     width: 4.5rem;
     height: 4.5rem;
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     padding: 0.25rem;
-    background: var(--color-surface);
     cursor: pointer;
-    transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+    transition: transform var(--transition-base);
 }
 
 .menu-gallery__thumb img {
@@ -381,24 +206,7 @@ pre {
 
 .menu-gallery__thumb:hover,
 .menu-gallery__thumb:focus-visible {
-    border-color: var(--color-pink-strong);
-    box-shadow: 0 0 0 0.15rem rgba(255, 192, 203, 0.35);
     transform: translateY(-1px);
-}
-
-.menu-gallery__thumb.active {
-    border-color: var(--color-pink-strong);
-    box-shadow: 0 0 0 0.15rem rgba(255, 192, 203, 0.5);
-}
-
-.link-choco {
-    color: var(--color-cocoa);
-    font-weight: 600;
-}
-
-.link-choco:hover,
-.link-choco:focus-visible {
-    color: var(--color-pink-strong);
 }
 
 .hero-carousel .carousel-control-prev,
@@ -409,12 +217,9 @@ pre {
 .promo-overlay {
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
-    background: rgba(0, 0, 0, 0.55);
     border-radius: var(--radius);
     padding: 1rem 1.25rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     max-width: min(420px, 90vw);
-    color: #fff;
 }
 
 .promo-title {
@@ -429,22 +234,16 @@ pre {
 }
 
 .menu-toolbar {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
 }
 
 .menu-empty {
     border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
 }
 
 .menu-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -462,11 +261,9 @@ pre {
 .menu-card__category {
     font-size: 0.75rem;
     letter-spacing: 0.08em;
-    color: var(--color-text-soft);
 }
 
 .menu-card__price {
-    color: var(--color-pink-strong);
     font-weight: 700;
 }
 
@@ -476,7 +273,6 @@ pre {
 
 .promo-highlight {
     font-size: clamp(1rem, 1.4vw + 0.5rem, 1.35rem);
-    color: var(--color-pink-strong);
     font-weight: 800;
 }
 

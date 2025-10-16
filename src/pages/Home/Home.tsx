@@ -1,4 +1,9 @@
+import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
+
 import { Button } from '../../components/common'
+import type { Producto } from '../../data/menu_datos'
+import { catalogoDatos } from '../../data/menu_datos'
 
 interface CarouselItem {
 	id: string
@@ -54,8 +59,46 @@ const carouselData: CarouselItem[] = [
 
 const carouselId = 'homeCarousel'
 
-const Home = () => (
-	<>
+const catalogImages = import.meta.glob('../../assets/img/catalog/**/*', {
+	import: 'default',
+	eager: true,
+}) as Record<string, string>
+
+const catalogImageMap = Object.entries(catalogImages).reduce<Record<string, string>>((accumulator, [path, src]) => {
+	const key = path.split('/').pop()
+	if (key) {
+		accumulator[key] = src
+	}
+	return accumulator
+}, {})
+
+const formatImagePath = (relativePath: string) => {
+	const fileName = relativePath.split('/').pop()
+	if (fileName && catalogImageMap[fileName]) {
+		return catalogImageMap[fileName]
+	}
+	const normalized = relativePath.replace('catalogo', 'catalog')
+	return new URL(`../../assets/${normalized}`, import.meta.url).href
+}
+
+const formatPrice = (value: number) =>
+	value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })
+
+type FeaturedProduct = Producto & { categoriaNombre: string }
+
+const Home = () => {
+	const featuredProducts = useMemo<FeaturedProduct[]>(() => {
+		const items: FeaturedProduct[] = []
+		catalogoDatos.categorias.forEach((categoria) => {
+			categoria.productos.forEach((producto) => {
+				items.push({ ...producto, categoriaNombre: categoria.nombre_categoria })
+			})
+		})
+		return items.slice(0, 6)
+	}, [])
+
+	return (
+		<>
 		<section aria-label="Carrusel principal" className="hero-carousel">
 			<div
 				id={carouselId}
@@ -140,9 +183,42 @@ const Home = () => (
 		<section className="py-5">
 			<div className="container">
 				<h2 className="mb-4 text-center section-title">Nuestra carta</h2>
+				{featuredProducts.length === 0 ? (
+					<p className="text-muted-soft text-center mb-0">Pronto compartiremos nuestra selección de productos.</p>
+				) : (
+					<>
+						<div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+							{featuredProducts.map((producto) => (
+								<div className="col" key={producto.codigo_producto}>
+									<div className="card card-soft shadow-soft h-100">
+										<Link to={`/menu/${producto.codigo_producto}`} className="ratio ratio-4x3">
+											<img
+												src={formatImagePath(producto.imagen_producto)}
+												alt={producto.nombre_producto}
+												className="w-100 h-100 object-fit-cover"
+												loading="lazy"
+											/>
+										</Link>
+										<div className="card-body text-center d-flex flex-column gap-2">
+											<p className="mb-1 text-uppercase small text-secondary">{producto.categoriaNombre}</p>
+											<h3 className="h6 mb-0">{producto.nombre_producto}</h3>
+											<p className="mb-0 brand-accent fw-semibold">{formatPrice(producto.precio_producto)}</p>
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
+						<div className="text-center mt-4">
+							<Button as="link" to="/menu" size="lg" className="btn-app--brand">
+								Ver carta completa
+							</Button>
+						</div>
+					</>
+				)}
 			</div>
 		</section>
 	</>
-)
+	)
+}
 
 export default Home

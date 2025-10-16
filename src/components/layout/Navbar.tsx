@@ -38,13 +38,19 @@ const secondaryLinks: SecondaryLink[] = [
 	{ label: 'Carrito', to: '/cart', icon: 'bi-cart3', ariaLabel: 'Carrito' },
 ]
 
-const renderPrimaryLink = (link: PrimaryLink) => (
+const renderPrimaryLink = (link: PrimaryLink, currentPath: string) => (
 	<NavLink
 		key={link.label}
 		to={link.to}
 		className={({ isActive }) => cx('nav-link', { active: isActive && !link.icon })}
 		aria-label={link.ariaLabel}
 		end={link.to === '/'}
+		onClick={(event) => {
+			if (link.to === '/' && currentPath === '/' && typeof window !== 'undefined') {
+				event.preventDefault()
+				window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+			}
+		}}
 	>
 		{link.icon ? <i className={cx('bi', link.icon, 'fs-5')} aria-hidden /> : link.label}
 		{link.icon ? <span className="visually-hidden">{link.label}</span> : null}
@@ -67,7 +73,19 @@ const renderMobileButton = (link: PrimaryLink | SecondaryLink, index: number, cu
 	const isActive = target === '/' ? currentPath === target : currentPath.startsWith(target)
 
 	return (
-		<Button key={key} as="link" to={target} block className={isActive ? 'active' : undefined}>
+		<Button
+			key={key}
+			as="link"
+			to={target}
+			block
+			className={isActive ? 'active' : undefined}
+			onClick={target === '/' && currentPath === '/' ? (event) => {
+				event.preventDefault()
+				if (typeof window !== 'undefined') {
+					window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+				}
+			} : undefined}
+		>
 			{link.label}
 		</Button>
 	)
@@ -79,7 +97,21 @@ const Navbar = () => {
 	return (
 		<nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top primary-nav shadow-sm">
 			<div className="container-fluid">
-				<NavLink className="navbar-brand d-flex align-items-center" to="/">
+				<NavLink
+					className="navbar-brand d-flex align-items-center"
+					to="/"
+					state={{ from: pathname }}
+					onClick={(event) => {
+						if (typeof window === 'undefined') {
+							return
+						}
+
+						if (pathname === '/') {
+							event.preventDefault()
+							window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+						}
+					}}
+				>
 					<img
 						src={logoImage}
 						alt="Pasteleria Mil Sabores"
@@ -105,7 +137,7 @@ const Navbar = () => {
 					<ul className="navbar-nav mx-auto d-none d-lg-flex">
 						{primaryLinks.map((link) => (
 							<li className="nav-item" key={link.label}>
-								{renderPrimaryLink(link)}
+								{renderPrimaryLink(link, pathname)}
 							</li>
 						))}
 					</ul>

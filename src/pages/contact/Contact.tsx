@@ -6,13 +6,12 @@ const Contact = () => (
 			<div className="card shadow-sm border-0 p-4 contact-card">
 				<h2 className="text-center mb-3 text-uppercase">Contáctanos</h2>
 				<form>
-					<Input label="Nombre completo" name="nombre" placeholder="Juan Perez Soto" required />
+					<Input label="Nombre completo" name="nombre" placeholder="Juan Perez Soto" />
 					<Input
 						label="Correo electronico"
 						type="email"
 						name="correo"
 						placeholder="tucorreo@dominio.com"
-						required
 					/>
 					<div className="mb-3">
 						<label className="form-label" htmlFor="contactComment">
@@ -23,9 +22,7 @@ const Contact = () => (
 							id="contactComment"
 							name="comentario"
 							rows={4}
-							maxLength={500}
 							placeholder="Maximo 500 caracteres"
-							required
 						/>
 					</div>
 					<Button type="submit" block>

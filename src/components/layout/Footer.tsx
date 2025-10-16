@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import { logoImage } from '../../assets/index.ts'
 
@@ -28,7 +28,6 @@ const footerSections: FooterSection[] = [
 			{ label: 'Inicio', to: '/' },
 			{ label: 'Nosotros', to: '/about' },
 			{ label: 'Blog', to: '/blog' },
-			{ label: 'Inicio de sesion', to: '/login' },
 		],
 	},
 	{
@@ -67,101 +66,131 @@ const footerSections: FooterSection[] = [
 	},
 ]
 
-const Footer = () => (
-	<footer className="site-footer mt-5">
-		<div className="container-fluid py-5 px-4 px-lg-5">
-			<div className="row g-4">
-				<div className="col-12 col-sm-6 col-md-4 col-lg-3">
-					<Link to="/" className="d-flex align-items-center w-100 mb-3 text-decoration-none">
-						<img
-							src={logoImage}
-							alt="Pasteleria Mil Sabores"
-							width={60}
-							className="rounded-pill me-2 flex-shrink-0"
-						/>
-						<span className="fs-5 fw-semibold text-truncate brand-script">Pasteleria Mil Sabores</span>
-					</Link>
-					<p className="text-muted-soft mb-0">Celebra la dulzura de la vida con Pasteleria 1000 Sabores.</p>
-				</div>
+const Footer = () => {
+	const location = useLocation()
 
-				{footerSections.map((section) => (
-					<div className="col-12 col-sm-6 col-md-4 col-lg" key={section.title}>
-						<h6 className="fw-bold text-uppercase text-muted-soft footer-heading">{section.title}</h6>
-						{section.links ? (
-							<ul className="nav flex-column">
-								{section.links.map((link) => {
-									const { label, to, external } = link
-									return (
-										<li className="nav-item mb-2" key={label}>
-											{external ? (
-												<a
-													href={to}
-													className="nav-link p-0 text-secondary"
-													target="_blank"
-													rel="noreferrer"
-												>
-													{label}
-												</a>
-											) : (
-												<Link to={to} className="nav-link p-0 text-secondary">
-													{label}
-												</Link>
-											)}
-										</li>
-									)
-								})}
-							</ul>
-						) : null}
+	return (
+		<footer className="site-footer mt-5">
+			<div className="container-fluid py-5 px-4 px-lg-5">
+				<div className="row g-4">
+					<div className="col-12 col-sm-6 col-md-4 col-lg-3">
+						<Link
+							to="/"
+							className="d-flex align-items-center w-100 mb-3 text-decoration-none"
+							onClick={(event) => {
+								if (typeof window === 'undefined') {
+									return
+								}
 
-						{section.description
-							? section.description.map((line) => (
+								if (location.pathname === '/') {
+									event.preventDefault()
+									window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+								}
+							}}
+						>
+							<img
+								src={logoImage}
+								alt="Pasteleria Mil Sabores"
+								width={60}
+								className="rounded-pill me-2 flex-shrink-0"
+							/>
+							<span className="fs-5 fw-semibold text-truncate brand-script">Pasteleria Mil Sabores</span>
+						</Link>
+						<p className="text-muted-soft mb-0">Celebra la dulzura de la vida con Pasteleria 1000 Sabores.</p>
+					</div>
+
+					{footerSections.map((section) => (
+						<div className="col-12 col-sm-6 col-md-4 col-lg" key={section.title}>
+							<h6 className="fw-bold text-uppercase text-muted-soft footer-heading">{section.title}</h6>
+							{section.links ? (
+								<ul className="nav flex-column">
+									{section.links.map((link) => {
+										const { label, to, external } = link
+										return (
+											<li className="nav-item mb-2" key={label}>
+												{external ? (
+													<a
+														href={to}
+														className="nav-link p-0 text-secondary"
+														target="_blank"
+														rel="noreferrer"
+													>
+														{label}
+													</a>
+												) : (
+													<Link
+														to={to}
+														className="nav-link p-0 text-secondary"
+														onClick={(event) => {
+														if (typeof window === 'undefined') {
+															return
+														}
+
+														if (to === '/' && location.pathname === '/') {
+															event.preventDefault()
+															window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+														}
+													}}
+													>
+														{label}
+													</Link>
+												)}
+											</li>
+										)
+									})}
+								</ul>
+							) : null}
+
+							{section.description
+								? section.description.map((line) => (
 									<p className="text-secondary mb-0" key={line}>
 										{line}
 									</p>
 								))
-							: null}
+								: null}
 
-						{section.socials ? (
-							<div className="d-flex gap-3 mt-3">
-								{section.socials.map((social) => (
-									<a
-										key={social.label}
-										href={social.href}
-										className="text-secondary fs-4"
-										aria-label={social.label}
-										target="_blank"
-										rel="noreferrer"
-									>
-										<i className={`bi ${social.icon}`} aria-hidden />
-									</a>
-								))}
-							</div>
-						) : null}
-					</div>
-				))}
+							{section.socials ? (
+								<div className="d-flex gap-3 mt-3">
+									{section.socials.map((social) => (
+										<a
+											key={social.label}
+											href={social.href}
+											className="text-secondary fs-4"
+											aria-label={social.label}
+											target="_blank"
+											rel="noreferrer"
+										>
+											<i className={`bi ${social.icon}`} aria-hidden />
+										</a>
+									))}
+								</div>
+							) : null}
+						</div>
+					))}
+				</div>
+
+				<hr className="border-secondary my-4" />
+
+				<div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
+					<small className="text-secondary">
+						&copy; {new Date().getFullYear()} Pasteleria Mil Sabores. Todos los derechos reservados.
+					</small>
+					<ul className="nav">
+						<li className="nav-item">
+							<Link to="/privacy" className="nav-link px-2 text-secondary">
+								Privacidad
+							</Link>
+						</li>
+						<li className="nav-item">
+							<Link to="/terms" className="nav-link px-2 text-secondary">
+								Terminos
+							</Link>
+						</li>
+					</ul>
+				</div>
 			</div>
-
-			<hr className="border-secondary my-4" />
-
-			<div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
-				<small className="text-secondary">
-					&copy; {new Date().getFullYear()} Pasteleria Mil Sabores. Todos los derechos reservados.
-				</small>
-				<ul className="nav">
-					<li className="nav-item">
-						<Link to="/privacy" className="nav-link px-2 text-secondary">
-							Privacidad
-						</Link>
-					</li>
-					<li className="nav-item">
-						<Link to="/terms" className="nav-link px-2 text-secondary">
-							Terminos
-						</Link>
-					</li>
-				</ul>
-			</div>
-		</div>
-	</footer>
-)
+		</footer>
+	)
+}
 
 export default Footer

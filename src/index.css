@@ -243,6 +243,32 @@ h6,
     box-shadow: none;
 }
 
+.btn-app--brand {
+    background: var(--color-cocoa);
+    border-color: var(--color-cocoa);
+    color: #fff;
+}
+
+.btn-app--brand:hover,
+.btn-app--brand:focus-visible {
+    background: #6f3410;
+    border-color: #6f3410;
+    color: #fff;
+}
+
+.btn-app--subtle {
+    background: transparent;
+    border-color: var(--color-border);
+    color: var(--color-text-soft);
+}
+
+.btn-app--subtle:hover,
+.btn-app--subtle:focus-visible {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
 .btn-app--sm {
     padding: 0.4rem 1rem;
     font-size: 0.875rem;
@@ -372,6 +398,128 @@ pre {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
+.menu-gallery__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.menu-gallery__thumb {
+    width: 4.5rem;
+    height: 4.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem;
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.menu-gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--radius-sm) - 4px);
+}
+
+.menu-gallery__thumb:hover,
+.menu-gallery__thumb:focus-visible {
+    border-color: var(--color-pink-strong);
+    box-shadow: 0 0 0 0.15rem rgba(255, 192, 203, 0.35);
+    transform: translateY(-1px);
+}
+
+.menu-gallery__thumb.active {
+    border-color: var(--color-pink-strong);
+    box-shadow: 0 0 0 0.15rem rgba(255, 192, 203, 0.5);
+}
+
+.register-page {
+    background: #fff;
+}
+
+.register-panel {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+}
+
+.register-panel__inner {
+    max-width: 520px;
+    margin-left: auto;
+    padding: clamp(1.75rem, 4vw, 3rem);
+    min-height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.register-panel__body {
+    flex: 1;
+}
+
+
+.register-brand-panel {
+    background: linear-gradient(145deg, #ffffff 0%, #fff5e1 65%);
+    color: var(--color-cocoa);
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+}
+
+.register-brand-panel__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: clamp(1.5rem, 3vw, 2.75rem);
+    max-width: 520px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.register-brand-panel__logo {
+    flex-shrink: 0;
+    box-shadow: var(--shadow-soft);
+}
+
+.register-brand-panel__copy {
+    text-align: left;
+}
+
+.link-choco {
+    color: var(--color-cocoa);
+    font-weight: 600;
+}
+
+.link-choco:hover,
+.link-choco:focus-visible {
+    color: var(--color-pink-strong);
+}
+
+@media (max-width: 991px) {
+    .register-panel {
+        box-shadow: none;
+        border-left: none !important;
+    }
+
+    .register-panel__inner {
+        min-height: auto;
+        max-height: none;
+        padding: 2.25rem 1.5rem 3rem;
+        overflow: visible;
+    }
+
+    .register-brand-panel {
+        position: static;
+        height: auto;
+    }
+}
+
 .hero-carousel .carousel-control-prev,
 .hero-carousel .carousel-control-next {
     height: 100%;
@@ -397,6 +545,52 @@ pre {
 
 .promo-subtitle {
     font-size: clamp(0.95rem, 1.2vw + 0.45rem, 1.25rem);
+}
+
+.menu-toolbar {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.menu-empty {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+}
+
+.menu-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+}
+
+.menu-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.menu-card__category {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--color-text-soft);
+}
+
+.menu-card__price {
+    color: var(--color-pink-strong);
+    font-weight: 700;
+}
+
+.object-fit-cover {
+    object-fit: cover;
 }
 
 .promo-highlight {

@@ -1,7 +1,44 @@
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+
 import { Button } from '../../components/common'
-import { catalogoDatos } from '../../data/carta_datos'
+import type { Producto } from '../../data/menu_datos'
+import { catalogoDatos } from '../../data/menu_datos'
+
+type OrderOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
+
+type EnrichedProduct = Producto & {
+	categoriaId: number
+	categoriaNombre: string
+}
+
+const ORDER_OPTIONS: { value: OrderOption; label: string }[] = [
+	{ value: 'name-asc', label: 'Nombre: A → Z' },
+	{ value: 'name-desc', label: 'Nombre: Z → A' },
+	{ value: 'price-asc', label: 'Precio: menor a mayor' },
+	{ value: 'price-desc', label: 'Precio: mayor a menor' },
+]
+
+const isBrowser = typeof window !== 'undefined'
+
+const catalogImages = import.meta.glob('../../assets/img/catalog/**/*', {
+	import: 'default',
+	eager: true,
+}) as Record<string, string>
+
+const catalogImageMap = Object.entries(catalogImages).reduce<Record<string, string>>((accumulator, [path, src]) => {
+	const key = path.split('/').pop()
+	if (key) {
+		accumulator[key] = src
+	}
+	return accumulator
+}, {})
 
 const formatImagePath = (relativePath: string) => {
+	const fileName = relativePath.split('/').pop()
+	if (fileName && catalogImageMap[fileName]) {
+		return catalogImageMap[fileName]
+	}
 	const normalized = relativePath.replace('catalogo', 'catalog')
 	return new URL(`../../assets/${normalized}`, import.meta.url).href
 }
@@ -9,55 +46,271 @@ const formatImagePath = (relativePath: string) => {
 const formatPrice = (value: number) =>
 	value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })
 
-const Menu = () => (
-	<section className="py-4 py-lg-5">
-		<div className="container">
-			<header className="text-center mb-5">
-				<h1 className="section-title mb-2">Nuestra carta</h1>
-				<p className="text-muted-soft mb-0">
-					Descubre nuestras categorías de productos y elige tus favoritos para tu próxima celebración.
-				</p>
-			</header>
+const Menu = () => {
+	const [category, setCategory] = useState<'all' | number>('all')
+	const [product, setProduct] = useState<'all' | string>('all')
+	const [priceMin, setPriceMin] = useState('')
+	const [priceMax, setPriceMax] = useState('')
+	const [order, setOrder] = useState<OrderOption>('name-asc')
 
-			{catalogoDatos.categorias.map((categoria) => (
-				<article className="mb-5" key={categoria.id_categoria}>
-					<div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-						<h2 className="h4 mb-0 text-uppercase text-muted-soft">{categoria.nombre_categoria}</h2>
-						<small className="text-secondary">
-							{categoria.productos.length} {categoria.productos.length === 1 ? 'producto' : 'productos'}
-						</small>
+	const collator = useMemo(() => new Intl.Collator('es', { sensitivity: 'base' }), [])
+
+	const allProducts = useMemo<EnrichedProduct[]>(
+		() =>
+			catalogoDatos.categorias.flatMap((categoria) =>
+				categoria.productos.map((producto) => ({
+					...producto,
+					categoriaId: categoria.id_categoria,
+					categoriaNombre: categoria.nombre_categoria,
+				})),
+			),
+		[],
+	)
+
+	const productOptions = useMemo(() => {
+		const scoped = category === 'all' ? allProducts : allProducts.filter((item) => item.categoriaId === category)
+		const unique = new Map<string, EnrichedProduct>()
+		scoped.forEach((item) => {
+			if (!unique.has(item.codigo_producto)) {
+				unique.set(item.codigo_producto, item)
+			}
+		})
+		return Array.from(unique.values()).sort((a, b) => collator.compare(a.nombre_producto, b.nombre_producto))
+	}, [allProducts, category, collator])
+
+	const filteredProducts = useMemo(() => {
+		const minValue = priceMin.trim() ? Number(priceMin) : null
+		const maxValue = priceMax.trim() ? Number(priceMax) : null
+
+		let items = allProducts
+		if (category !== 'all') {
+			items = items.filter((item) => item.categoriaId === category)
+		}
+		if (product !== 'all') {
+			items = items.filter((item) => item.codigo_producto === product)
+		}
+		if (minValue !== null && !Number.isNaN(minValue)) {
+			items = items.filter((item) => item.precio_producto >= minValue)
+		}
+		if (maxValue !== null && !Number.isNaN(maxValue)) {
+			items = items.filter((item) => item.precio_producto <= maxValue)
+		}
+
+		const sorted = [...items]
+		switch (order) {
+			case 'name-desc':
+				sorted.sort((a, b) => collator.compare(b.nombre_producto, a.nombre_producto))
+				break
+			case 'price-asc':
+				sorted.sort((a, b) => a.precio_producto - b.precio_producto)
+				break
+			case 'price-desc':
+				sorted.sort((a, b) => b.precio_producto - a.precio_producto)
+				break
+			case 'name-asc':
+			default:
+				sorted.sort((a, b) => collator.compare(a.nombre_producto, b.nombre_producto))
+		}
+
+		return sorted
+	}, [allProducts, category, product, priceMin, priceMax, order, collator])
+
+	const totalProductos = filteredProducts.length
+
+	const resetFilters = () => {
+		setCategory('all')
+		setProduct('all')
+		setPriceMin('')
+		setPriceMax('')
+		setOrder('name-asc')
+	}
+
+	const handleShare = async (item: EnrichedProduct) => {
+		if (!isBrowser) return
+		const url = `${window.location.origin}/menu/${item.codigo_producto}`
+		const shareData = {
+			title: item.nombre_producto,
+			text: `Descubre ${item.nombre_producto} de Pastelería Mil Sabores`,
+			url,
+		}
+		try {
+			if (navigator.share) {
+				await navigator.share(shareData)
+				return
+			}
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(url)
+				window.alert('Enlace copiado al portapapeles')
+			}
+		} catch (error) {
+			console.error('No fue posible compartir el producto', error)
+		}
+	}
+
+	return (
+		<section className="py-4 py-lg-5">
+			<div className="container">
+				<header className="text-center mb-4 mb-lg-5">
+					<h1 className="section-title mb-2">Nuestra Carta</h1>
+					<p className="text-muted-soft mb-0">
+						Explora nuestras categorías y encuentra el postre ideal para celebrar.
+					</p>
+				</header>
+
+				<div className="menu-toolbar shadow-soft mb-4">
+					<div className="row g-3 align-items-end">
+						<div className="col-12 col-lg-2">
+							<label className="form-label fw-semibold" htmlFor="categoryFilter">
+								Categoría
+							</label>
+							<select
+								id="categoryFilter"
+								className="form-select"
+								value={category === 'all' ? 'all' : String(category)}
+								onChange={(event) => {
+									const value = event.target.value
+									setCategory(value === 'all' ? 'all' : Number(value))
+									setProduct('all')
+								}}
+							>
+								<option value="all">Todas</option>
+								{catalogoDatos.categorias.map((categoria) => (
+									<option key={categoria.id_categoria} value={categoria.id_categoria}>
+										{categoria.nombre_categoria}
+									</option>
+								))}
+							</select>
+						</div>
+						<div className="col-12 col-lg-2">
+							<label className="form-label fw-semibold" htmlFor="productFilter">
+								Producto
+							</label>
+							<select
+								id="productFilter"
+								className="form-select"
+								value={product === 'all' ? 'all' : product}
+								onChange={(event) => setProduct(event.target.value === 'all' ? 'all' : event.target.value)}
+								disabled={productOptions.length === 0}
+							>
+								<option value="all">Todos</option>
+								{productOptions.map((item) => (
+									<option key={item.codigo_producto} value={item.codigo_producto}>
+										{item.nombre_producto}
+									</option>
+								))}
+							</select>
+						</div>
+						<div className="col-6 col-lg-2">
+							<label className="form-label fw-semibold" htmlFor="priceMin">
+								Precio mín.
+							</label>
+							<input
+								type="number"
+								min={0}
+								id="priceMin"
+								className="form-control"
+								placeholder="0"
+								value={priceMin}
+								onChange={(event) => setPriceMin(event.target.value)}
+							/>
+						</div>
+						<div className="col-6 col-lg-2">
+							<label className="form-label fw-semibold" htmlFor="priceMax">
+								Precio máx.
+							</label>
+							<input
+								type="number"
+								min={0}
+								id="priceMax"
+								className="form-control"
+								placeholder="∞"
+								value={priceMax}
+								onChange={(event) => setPriceMax(event.target.value)}
+							/>
+						</div>
+						<div className="col-12 col-lg-2">
+							<label className="form-label fw-semibold" htmlFor="orderSelect">
+								Ordenar
+							</label>
+							<select
+								id="orderSelect"
+								className="form-select"
+								value={order}
+								onChange={(event) => setOrder(event.target.value as OrderOption)}
+							>
+								{ORDER_OPTIONS.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</div>
+						<div className="col-12 col-lg-2 d-flex align-items-end justify-content-center justify-content-lg-start">
+							<Button type="button" className="btn-app--brand w-100" onClick={resetFilters}>
+								Limpiar
+							</Button>
+						</div>
 					</div>
+				</div>
+
+				<div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+					<p className="text-muted-soft mb-0">
+						{totalProductos === 0
+							? 'Sin productos visibles.'
+							: `${totalProductos} ${totalProductos === 1 ? 'producto disponible' : 'productos disponibles'}`}
+					</p>
+				</div>
+
+				{totalProductos === 0 ? (
+					<div className="menu-empty card-soft text-center py-5">
+						<p className="mb-2 fw-semibold">No encontramos productos con los filtros seleccionados.</p>
+						<p className="text-muted-soft mb-4">
+							Ajusta los criterios o vuelve a mostrar toda la carta.
+						</p>
+						<Button type="button" className="btn-app--brand" onClick={resetFilters}>
+							Ver carta completa
+						</Button>
+					</div>
+				) : (
 					<div className="row g-4">
-						{categoria.productos.map((producto) => (
-							<div className="col-12 col-md-6 col-lg-4" key={producto.codigo_producto}>
-								<div className="card card-soft h-100 shadow-soft">
-									<img
-										src={formatImagePath(producto.imagen_producto)}
-										alt={producto.nombre_producto}
-										className="card-img-top"
-										loading="lazy"
-									/>
-									<div className="card-body d-flex flex-column gap-3">
-										<div>
-											<h3 className="h5 mb-1">{producto.nombre_producto}</h3>
-											<p className="text-muted mb-2">{producto.descripción_producto}</p>
-											<p className="fw-semibold brand-accent mb-0">{formatPrice(producto.precio_producto)}</p>
-										</div>
-										<div className="d-flex align-items-center justify-content-between">
-											<small className="text-muted">
-												Stock: {producto.stock} · Critico: {producto.stock_critico}
-											</small>
-											<Button size="sm">Agregar al carrito</Button>
+						{filteredProducts.map((item) => (
+							<div className="col-12 col-md-6 col-lg-4" key={item.codigo_producto}>
+								<div className="menu-card">
+									<Link to={`/menu/${item.codigo_producto}`} className="ratio ratio-4x3">
+										<img
+											src={formatImagePath(item.imagen_producto)}
+											alt={item.nombre_producto}
+											className="w-100 h-100 object-fit-cover"
+											loading="lazy"
+										/>
+									</Link>
+									<div className="menu-card__body">
+										<p className="menu-card__category mb-1 text-uppercase">
+											{item.categoriaNombre}
+										</p>
+										<h3 className="h5 mb-1">{item.nombre_producto}</h3>
+										<p className="menu-card__price mb-2">{formatPrice(item.precio_producto)}</p>
+										<p className="text-muted-soft mb-3 flex-grow-1">{item.descripción_producto}</p>
+										<div className="d-grid gap-2">
+											<Button as="link" to={`/menu/${item.codigo_producto}`} className="btn-app--brand" block>
+												Ver detalle y personalizar
+											</Button>
+											<Button type="button" className="btn-app--brand" block>
+												<i className="bi bi-cart-plus" aria-hidden="true" /> Añadir al carrito
+											</Button>
+											<Button type="button" className="btn-app--subtle" block onClick={() => handleShare(item)}>
+												<i className="bi bi-share" aria-hidden="true" /> Compartir
+											</Button>
 										</div>
 									</div>
 								</div>
 							</div>
 						))}
 					</div>
-				</article>
-			))}
-		</div>
-	</section>
-)
+				)}
+			</div>
+		</section>
+	)
+}
 
 export default Menu

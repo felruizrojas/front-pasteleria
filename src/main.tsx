@@ -6,6 +6,9 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import '@/styles/theme.css'
 import '@/index.css'
 import App from '@/app/App'
+import { initLocalData } from '@/shared/utils/storage/initLocalData'
+
+initLocalData()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

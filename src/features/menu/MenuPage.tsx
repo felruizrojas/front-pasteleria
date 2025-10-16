@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/shared/components/common'
 import type { Producto } from '@/shared/data/menu_datos'
 import { catalogoDatos } from '@/shared/data/menu_datos'
-
-type OrderOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
+import MenuFilters, { type OrderOption } from './components/MenuFilters'
+import { validatePriceFilters } from '@/shared/utils/validations/filtersValidations'
+import type { ValidationErrors } from '@/shared/utils/validations/types'
+import type { FilterValues } from '@/shared/utils/validations/filtersValidations'
 
 type EnrichedProduct = Producto & {
 	categoriaId: number
@@ -62,6 +64,7 @@ const Menu = () => {
 	const [minPrice, setMinPrice] = useState('')
 	const [maxPrice, setMaxPrice] = useState('')
 	const [sortOrder, setSortOrder] = useState<OrderOption>('name-asc')
+	const [filterErrors, setFilterErrors] = useState<ValidationErrors<FilterValues>>({})
 
 	const collator = useMemo(() => new Intl.Collator('es', { sensitivity: 'base' }), [])
 
@@ -136,6 +139,24 @@ const Menu = () => {
 		setMinPrice('')
 		setMaxPrice('')
 		setSortOrder('name-asc')
+		setFilterErrors({})
+	}
+
+	const handleCategoryChange = (value: 'all' | number) => {
+		setSelectedCategory(value)
+		setSelectedProductCode('all')
+	}
+
+	const handleMinPriceChange = (value: string) => {
+		setMinPrice(value)
+		const validation = validatePriceFilters({ precioMin: value, precioMax: maxPrice })
+		setFilterErrors(validation.errors)
+	}
+
+	const handleMaxPriceChange = (value: string) => {
+		setMaxPrice(value)
+		const validation = validatePriceFilters({ precioMin: minPrice, precioMax: value })
+		setFilterErrors(validation.errors)
 	}
 
 	const handleShare = async (item: EnrichedProduct) => {
@@ -170,104 +191,23 @@ const Menu = () => {
 					</p>
 				</header>
 
-				<div className="menu-toolbar shadow-soft mb-4">
-					<div className="row g-3 align-items-end">
-						<div className="col-12 col-lg-2">
-							<label className="form-label fw-semibold" htmlFor="categoryFilter">
-								Categoría
-							</label>
-							<select
-								id="categoryFilter"
-								className="form-select"
-									value={selectedCategory === 'all' ? 'all' : String(selectedCategory)}
-									onChange={(event) => {
-										const { value } = event.target
-										setSelectedCategory(value === 'all' ? 'all' : Number(value))
-										setSelectedProductCode('all')
-								}}
-							>
-								<option value="all">Todas</option>
-								{catalogoDatos.categorias.map((categoria) => (
-									<option key={categoria.id_categoria} value={categoria.id_categoria}>
-										{categoria.nombre_categoria}
-									</option>
-								))}
-							</select>
-						</div>
-						<div className="col-12 col-lg-2">
-							<label className="form-label fw-semibold" htmlFor="productFilter">
-								Producto
-							</label>
-							<select
-								id="productFilter"
-								className="form-select"
-								value={selectedProductCode === 'all' ? 'all' : selectedProductCode}
-								onChange={(event) => {
-									const { value } = event.target
-									setSelectedProductCode(value === 'all' ? 'all' : (value as Producto['codigo_producto']))
-								}}
-								disabled={productOptions.length === 0}
-							>
-								<option value="all">Todos</option>
-								{productOptions.map((item) => (
-									<option key={item.codigo_producto} value={item.codigo_producto}>
-										{item.nombre_producto}
-									</option>
-								))}
-							</select>
-						</div>
-						<div className="col-6 col-lg-2">
-							<label className="form-label fw-semibold" htmlFor="priceMin">
-								Precio mín.
-							</label>
-							<input
-								type="number"
-								min={0}
-								id="priceMin"
-								className="form-control"
-								placeholder="0"
-								value={minPrice}
-								onChange={(event) => setMinPrice(event.target.value)}
-							/>
-						</div>
-						<div className="col-6 col-lg-2">
-							<label className="form-label fw-semibold" htmlFor="priceMax">
-								Precio máx.
-							</label>
-							<input
-								type="number"
-								min={0}
-								id="priceMax"
-								className="form-control"
-								placeholder="∞"
-								value={maxPrice}
-								onChange={(event) => setMaxPrice(event.target.value)}
-							/>
-						</div>
-						<div className="col-12 col-lg-2">
-							<label className="form-label fw-semibold" htmlFor="orderSelect">
-								Ordenar
-							</label>
-							<select
-								id="orderSelect"
-								className="form-select"
-								value={sortOrder}
-								onChange={(event) => setSortOrder(event.target.value as OrderOption)}
-							>
-								{ORDER_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
-						</div>
-						<div className="col-12 col-lg-2 d-flex align-items-end justify-content-center justify-content-lg-start">
-							<Button type="button" variant="mint" className="w-100" onClick={resetFilters}>
-								Limpiar
-							</Button>
-						</div>
-					</div>
-				</div>
+				<MenuFilters
+					categories={catalogoDatos.categorias}
+					productOptions={productOptions}
+					orderOptions={ORDER_OPTIONS}
+					selectedCategory={selectedCategory}
+					selectedProductCode={selectedProductCode}
+					minPrice={minPrice}
+					maxPrice={maxPrice}
+					sortOrder={sortOrder}
+					errors={filterErrors}
+					onCategoryChange={handleCategoryChange}
+					onProductChange={setSelectedProductCode}
+					onMinPriceChange={handleMinPriceChange}
+					onMaxPriceChange={handleMaxPriceChange}
+					onSortChange={setSortOrder}
+					onReset={resetFilters}
+				/>
 
 				<div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
 					<p className="mb-0">

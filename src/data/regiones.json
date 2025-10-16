@@ -1,0 +1,82 @@
+[
+  {
+    "id": "15",
+    "nombre": "Arica y Parinacota",
+    "comunas": ["Arica", "Camarones", "Putre", "General Lagos"]
+  },
+  {
+    "id": "01",
+    "nombre": "Tarapacá",
+    "comunas": ["Iquique", "Alto Hospicio", "Pozo Almonte", "Pica", "Huara"]
+  },
+  {
+    "id": "02",
+    "nombre": "Antofagasta",
+    "comunas": ["Antofagasta", "Calama", "Tocopilla", "Mejillones", "San Pedro de Atacama"]
+  },
+  {
+    "id": "03",
+    "nombre": "Atacama",
+    "comunas": ["Copiapó", "Caldera", "Vallenar", "Tierra Amarilla", "Chañaral"]
+  },
+  {
+    "id": "04",
+    "nombre": "Coquimbo",
+    "comunas": ["La Serena", "Coquimbo", "Ovalle", "Vicuna", "Illapel"]
+  },
+  {
+    "id": "05",
+    "nombre": "Valparaíso",
+    "comunas": ["Valparaíso", "Viña del Mar", "Concón", "Quilpué", "Villa Alemana"]
+  },
+  {
+    "id": "06",
+    "nombre": "O'Higgins",
+    "comunas": ["Rancagua", "Machalí", "San Fernando", "Pichilemu", "Rengo"]
+  },
+  {
+    "id": "07",
+    "nombre": "Maule",
+    "comunas": ["Talca", "Curicó", "Linares", "Cauquenes", "San Javier"]
+  },
+  {
+    "id": "08",
+    "nombre": "Biobío",
+    "comunas": ["Concepción", "Talcahuano", "Los Ángeles", "Coronel", "Chillán"]
+  },
+  {
+    "id": "09",
+    "nombre": "La Araucanía",
+    "comunas": ["Temuco", "Padre Las Casas", "Villarrica", "Angol", "Pucón"]
+  },
+  {
+    "id": "10",
+    "nombre": "Los Lagos",
+    "comunas": ["Puerto Montt", "Puerto Varas", "Osorno", "Castro", "Ancud"]
+  },
+  {
+    "id": "11",
+    "nombre": "Aysén",
+    "comunas": ["Coyhaique", "Puerto Aysén", "Chile Chico", "Cochrane", "Guaitecas"]
+  },
+  {
+    "id": "12",
+    "nombre": "Magallanes",
+    "comunas": ["Punta Arenas", "Puerto Natales", "Porvenir", "Cabo de Hornos", "Torres del Paine"]
+  },
+  {
+    "id": "13",
+    "nombre": "Metropolitana",
+    "comunas": ["Santiago", "Providencia", "Ñuñoa", "Maipú", "La Florida"]
+  },
+  {
+    "id": "14",
+    "nombre": "Los Ríos",
+    "comunas": ["Valdivia", "La Unión", "Río Bueno", "Panguipulli", "Futrono"]
+  },
+  {
+    "id": "16",
+    "nombre": "Ñuble",
+    "comunas": ["Chillán", "Chillán Viejo", "San Carlos", "Bulnes", "Quillón"]
+  }
+]

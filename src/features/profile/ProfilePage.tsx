@@ -1,30 +1,67 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/shared/components/common'
 import { logoImage as defaultAvatar } from '@/assets'
-import { REGIONES_COMUNAS } from '@/shared/data/region_comuna'
+import useAuth from '@/shared/hooks/useAuth'
+import { LOCAL_STORAGE_KEYS } from '@/shared/utils/storage/initLocalData'
+import { getLocalData, getLocalItem, setLocalItem } from '@/shared/utils/storage/localStorageUtils'
+import {
+	mapFormToStoredUser,
+	saveUserRecord,
+	validateUserForm,
+} from '@/shared/utils/validations/userValidations'
+import type { UserFormValues } from '@/shared/utils/validations/userValidations'
+import type { ValidationErrors } from '@/shared/utils/validations/types'
+import type { StoredUser } from '@/shared/types/user'
+
+const createInitialValues = (user?: StoredUser | null): UserFormValues => ({
+	id: user?.id ?? '',
+	run: user?.run ?? '',
+	nombre: user?.nombre ?? '',
+	apellidos: user?.apellidos ?? '',
+	correo: user?.correo ?? '',
+	fechaNacimiento: user?.fechaNacimiento ?? '',
+	regionId: user?.regionId ?? '',
+	comuna: user?.comuna ?? '',
+	direccion: user?.direccion ?? '',
+	password: '',
+	confirmPassword: '',
+})
 
 const Profile = () => {
-	const [selectedRegionId, setSelectedRegionId] = useState('')
-	const [selectedComuna, setSelectedComuna] = useState('')
-	const [avatarUrl, setAvatarUrl] = useState<string>(defaultAvatar)
 	const location = useLocation()
+	const navigate = useNavigate()
 	const currentPath = `${location.pathname}${location.search}`
+	const { login, logout, user } = useAuth()
+	const [avatarUrl, setAvatarUrl] = useState<string>(defaultAvatar)
+	const [regions, setRegions] = useState<Array<{ id: string; nombre: string; comunas: string[] }>>([])
+	const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
+	const [values, setValues] = useState<UserFormValues>(createInitialValues())
+	const [errors, setErrors] = useState<ValidationErrors<UserFormValues>>({})
+	const [feedback, setFeedback] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
 
-	const placeholderProfile = {
-		run: '12.345.678-9',
-		email: 'usuario@correo.com',
-	}
+	useEffect(() => {
+		const regionData = getLocalData<typeof regions[number]>(LOCAL_STORAGE_KEYS.regiones)
+		setRegions(regionData)
+	}, [])
 
-	const regionOptions = REGIONES_COMUNAS.map(({ id, nombre }) => (
-		<option key={id} value={id}>
-			{nombre}
-		</option>
-	))
+	useEffect(() => {
+		const stored = getLocalItem<StoredUser>(LOCAL_STORAGE_KEYS.activeUser)
+		if (!stored) {
+			setFeedback({ type: 'danger', text: 'No encontramos tu sesión. Inicia sesión nuevamente.' })
+			return
+		}
 
-	const comunaOptions = REGIONES_COMUNAS.find((region) => region.id === selectedRegionId)?.comunas ?? []
+		setCurrentUser(stored)
+		setValues(createInitialValues(stored))
+	}, [])
+
+	const comunaOptions = useMemo(
+		() => regions.find((region) => region.id === values.regionId)?.comunas ?? [],
+		[regions, values.regionId],
+	)
 
 	const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.currentTarget.files?.[0]
@@ -45,18 +82,49 @@ const Profile = () => {
 		setAvatarUrl(defaultAvatar)
 	}
 
+	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = event.currentTarget
+		setValues((previous) => ({ ...previous, [name]: value }))
+		setErrors((previous) => ({ ...previous, [name]: undefined }))
+		setFeedback(null)
+	}
+
 	const handleRegionChange = (event: ChangeEvent<HTMLSelectElement>) => {
 		const nextRegion = event.currentTarget.value
-		setSelectedRegionId(nextRegion)
-		setSelectedComuna('')
+		setValues((previous) => ({ ...previous, regionId: nextRegion, comuna: '' }))
+		setErrors((previous) => ({ ...previous, regionId: undefined, comuna: undefined }))
+		setFeedback(null)
 	}
 
 	const handleComunaChange = (event: ChangeEvent<HTMLSelectElement>) => {
-		setSelectedComuna(event.currentTarget.value)
+		const nextComuna = event.currentTarget.value
+		setValues((previous) => ({ ...previous, comuna: nextComuna }))
+		setErrors((previous) => ({ ...previous, comuna: undefined }))
+		setFeedback(null)
 	}
 
-	const handleSave = (event: FormEvent<HTMLFormElement>) => {
+	const handleSave = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
+		if (!currentUser) {
+			setFeedback({ type: 'danger', text: 'No es posible actualizar el perfil sin sesión activa.' })
+			return
+		}
+
+		const validation = validateUserForm(values, { mode: 'update' })
+		if (!validation.isValid) {
+			setErrors(validation.errors)
+			setFeedback({ type: 'danger', text: 'Corrige los campos marcados e inténtalo nuevamente.' })
+			return
+		}
+
+		const record = mapFormToStoredUser({ ...values, password: values.password || currentUser.password }, currentUser)
+		saveUserRecord(record)
+		setLocalItem(LOCAL_STORAGE_KEYS.activeUser, record)
+		setCurrentUser(record)
+		setValues(createInitialValues(record))
+		setFeedback({ type: 'success', text: 'Datos actualizados con éxito.' })
+
+		await login({ email: record.correo, password: record.password })
 	}
 
 	return (
@@ -84,25 +152,33 @@ const Profile = () => {
 										<Button type="button" variant="mint" onClick={handleAvatarReset}>
 											<i className="bi bi-trash me-1" aria-hidden="true" /> Quitar foto
 										</Button>
-									</div>
+								</div>
 
-									<hr />
+								</div>
 
-									<div className="text-start small">
-										<div className="d-flex justify-content-between">
-											<span>Correo</span>
-											<span className="fw-semibold">{placeholderProfile.email}</span>
-										</div>
-									</div>
+								<hr />
 
-									<div className="d-grid gap-2 mt-3">
-										<Button as="link" to="/cart" variant="mint">
-											<i className="bi bi-receipt me-1" aria-hidden="true" /> Mis pedidos
-										</Button>
-										<Button as="link" to="/login" variant="strawberry" state={{ from: currentPath }}>
-											<i className="bi bi-box-arrow-right me-1" aria-hidden="true" /> Cerrar sesión
-										</Button>
+								<div className="text-start small">
+									<div className="d-flex justify-content-between">
+										<span>Correo</span>
+										<span className="fw-semibold">{values.correo || user?.email || '—'}</span>
 									</div>
+								</div>
+
+								<div className="d-grid gap-2 mt-3">
+									<Button as="link" to="/cart" variant="mint">
+										<i className="bi bi-receipt me-1" aria-hidden="true" /> Mis pedidos
+									</Button>
+									<Button
+										type="button"
+										variant="strawberry"
+										onClick={() => {
+											logout()
+											navigate('/login', { replace: true, state: { from: currentPath } })
+										}}
+									>
+										<i className="bi bi-box-arrow-right me-1" aria-hidden="true" /> Cerrar sesión
+									</Button>
 								</div>
 							</div>
 						</div>
@@ -111,55 +187,91 @@ const Profile = () => {
 					<div className="col-12 col-lg-8">
 						<div className="card border-0 shadow-sm mb-4">
 							<div className="card-body p-4 p-lg-5">
-								<h1 className="h4 fw-bold mb-4">Datos personales</h1>
-								<form className="row g-3" onSubmit={handleSave}>
+						<h1 className="h4 fw-bold mb-4">Datos personales</h1>
+								<form className="row g-3" onSubmit={handleSave} noValidate>
+									{feedback ? (
+										<div className={`alert alert-${feedback.type}`} role="alert">
+											{feedback.text}
+										</div>
+									) : null}
 									<div className="col-12 col-md-6">
 										<Input
 											label="RUN"
 											name="run"
-											placeholder={placeholderProfile.run}
+											placeholder="19011022K"
+											value={values.run}
+											onChange={handleInputChange}
+											errorText={errors.run}
 										/>
 									</div>
 									<div className="col-12 col-md-6">
 										<label className="form-label" htmlFor="birthdate">
-											Fecha de nacimiento
+											Fecha de nacimiento (opcional)
 										</label>
 										<input
 											type="date"
 											id="birthdate"
-											className="form-control"
+											name="fechaNacimiento"
+											className={`form-control${errors.fechaNacimiento ? ' is-invalid' : ''}`}
+											value={values.fechaNacimiento ?? ''}
+											onChange={handleInputChange}
 										/>
+										{errors.fechaNacimiento ? (
+											<div className="invalid-feedback d-block">{errors.fechaNacimiento}</div>
+										) : null}
 									</div>
 									<div className="col-12 col-md-6">
 										<Input
-											label="Nombres"
-											name="firstNames"
-											placeholder="María Luisa"
+											label="Nombre"
+											name="nombre"
+											placeholder="María"
+											value={values.nombre}
+											onChange={handleInputChange}
+											errorText={errors.nombre}
 										/>
 									</div>
 									<div className="col-12 col-md-6">
 										<Input
 											label="Apellidos"
-											name="lastNames"
+											name="apellidos"
 											placeholder="Pérez González"
+											value={values.apellidos}
+											onChange={handleInputChange}
+											errorText={errors.apellidos}
 										/>
 									</div>
 									<div className="col-12">
-										<Input label="Correo" type="email" name="email" placeholder={placeholderProfile.email} />
+										<Input
+											label="Correo"
+											name="correo"
+											type="email"
+											placeholder="usuario@dominio.com"
+											value={values.correo}
+											onChange={handleInputChange}
+											helperText="El rol se asigna automáticamente según el dominio."
+											errorText={errors.correo}
+										/>
 									</div>
 									<div className="col-12 col-md-6">
 										<label className="form-label" htmlFor="region">
-											Region
+											Región
 										</label>
 										<select
 											id="region"
-											className="form-select"
-											value={selectedRegionId}
+											className={`form-select${errors.regionId ? ' is-invalid' : ''}`}
+											value={values.regionId}
 											onChange={handleRegionChange}
 										>
-											<option value="">Selecciona...</option>
-											{regionOptions}
+											<option value="">Selecciona una región</option>
+											{regions.map((region) => (
+												<option key={region.id} value={region.id}>
+													{region.nombre}
+												</option>
+											))}
 										</select>
+										{errors.regionId ? (
+											<div className="invalid-feedback d-block">{errors.regionId}</div>
+										) : null}
 									</div>
 									<div className="col-12 col-md-6">
 										<label className="form-label" htmlFor="comuna">
@@ -167,30 +279,56 @@ const Profile = () => {
 										</label>
 										<select
 											id="comuna"
-											className="form-select"
-											value={selectedComuna}
+											className={`form-select${errors.comuna ? ' is-invalid' : ''}`}
+											disabled={!values.regionId}
+											value={values.comuna}
 											onChange={handleComunaChange}
-											disabled={!selectedRegionId}
 										>
-											<option value="">Selecciona...</option>
-											{comunaOptions.map((comuna) => (
-												<option key={comuna} value={comuna}>
-													{comuna}
+											<option value="">Selecciona una comuna</option>
+											{comunaOptions.map((option) => (
+												<option key={option} value={option}>
+													{option}
 												</option>
 											))}
 										</select>
+										{errors.comuna ? (
+											<div className="invalid-feedback d-block">{errors.comuna}</div>
+										) : null}
 									</div>
 									<div className="col-12">
-										<label className="form-label" htmlFor="address">
-											Direccion
-										</label>
-										<input
-											type="text"
-											id="address"
-											className="form-control"
+										<Input
+											label="Dirección"
+											name="direccion"
 											placeholder="Calle 123"
+											value={values.direccion}
+											onChange={handleInputChange}
+											errorText={errors.direccion}
 										/>
 									</div>
+									<div className="col-12 col-md-6">
+										<Input
+											label="Contraseña"
+											name="password"
+											type="password"
+											placeholder="••••"
+											value={values.password}
+											onChange={handleInputChange}
+											helperText="Déjalo en blanco para mantener tu contraseña actual."
+											errorText={errors.password}
+										/>
+									</div>
+									<div className="col-12 col-md-6">
+										<Input
+											label="Confirmar contraseña"
+											name="confirmPassword"
+											type="password"
+											placeholder="••••"
+											value={values.confirmPassword}
+											onChange={handleInputChange}
+											errorText={errors.confirmPassword}
+										/>
+									</div>
+
 									<div className="d-flex flex-wrap gap-2 mt-4">
 										<Button type="submit" variant="strawberry">
 											<i className="bi bi-save2 me-1" aria-hidden="true" /> Guardar cambios

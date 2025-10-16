@@ -1,16 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/shared/components/common'
 import { logoImage } from '@/assets'
-import { REGIONES_COMUNAS } from '@/shared/data/region_comuna'
+import { LOCAL_STORAGE_KEYS } from '@/shared/utils/storage/initLocalData'
+import { getLocalData } from '@/shared/utils/storage/localStorageUtils'
+import {
+	MIN_AGE,
+	mapFormToStoredUser,
+	saveUserRecord,
+	validateUserForm,
+} from '@/shared/utils/validations/userValidations'
+import type { UserFormValues } from '@/shared/utils/validations/userValidations'
+import type { ValidationErrors } from '@/shared/utils/validations/types'
+import { setLocalItem } from '@/shared/utils/storage/localStorageUtils'
+import useAuth from '@/shared/hooks/useAuth'
 
 const RegisterUser = () => {
 	const location = useLocation()
 	const currentPath = location.pathname
-	const [regionId, setRegionId] = useState('')
-	const [comuna, setComuna] = useState('')
+	const navigate = useNavigate()
+	const { login } = useAuth()
+	const [regions, setRegions] = useState<Array<{ id: string; nombre: string; comunas: string[] }>>([])
+	const [values, setValues] = useState<UserFormValues>({
+		run: '',
+		nombre: '',
+		apellidos: '',
+		correo: '',
+		fechaNacimiento: '',
+		regionId: '',
+		comuna: '',
+		direccion: '',
+		password: '',
+		confirmPassword: '',
+	})
+	const [errors, setErrors] = useState<ValidationErrors<UserFormValues>>({})
+	const [formMessage, setFormMessage] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -32,20 +58,57 @@ const RegisterUser = () => {
 		document.body.removeAttribute('data-bs-padding-right')
 	}, [])
 
-	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault()
+	useEffect(() => {
+		const regionData = getLocalData<typeof regions[number]>(LOCAL_STORAGE_KEYS.regiones)
+		setRegions(regionData)
+	}, [])
+
+	const comunaOptions = useMemo(
+		() => regions.find((region) => region.id === values.regionId)?.comunas ?? [],
+		[regions, values.regionId],
+	)
+
+	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = event.currentTarget
+		setValues((previous) => ({ ...previous, [name]: value }))
+		setErrors((previous) => ({ ...previous, [name]: undefined }))
+		setFormMessage(null)
 	}
 
 	const handleRegionChange = (event: ChangeEvent<HTMLSelectElement>) => {
-		setRegionId(event.currentTarget.value)
-		setComuna('')
+		const nextRegion = event.currentTarget.value
+		setValues((previous) => ({ ...previous, regionId: nextRegion, comuna: '' }))
+		setErrors((previous) => ({ ...previous, regionId: undefined, comuna: undefined }))
+		setFormMessage(null)
 	}
 
 	const handleComunaChange = (event: ChangeEvent<HTMLSelectElement>) => {
-		setComuna(event.currentTarget.value)
+		const nextComuna = event.currentTarget.value
+		setValues((previous) => ({ ...previous, comuna: nextComuna }))
+		setErrors((previous) => ({ ...previous, comuna: undefined }))
+		setFormMessage(null)
 	}
 
-	const comunaOptions = REGIONES_COMUNAS.find((region) => region.id === regionId)?.comunas ?? []
+	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault()
+		const validation = validateUserForm(values, { mode: 'create' })
+		if (!validation.isValid) {
+			setErrors(validation.errors)
+			setFormMessage({ type: 'danger', text: 'Por favor corrige los campos marcados.' })
+			return
+		}
+
+		const record = mapFormToStoredUser(values)
+		saveUserRecord(record)
+		setLocalItem(LOCAL_STORAGE_KEYS.activeUser, record)
+		setFormMessage({
+			type: 'success',
+			text: 'Cuenta creada con éxito. Iniciando sesión...',
+		})
+
+		await login({ email: values.correo, password: values.password })
+		navigate('/', { replace: true })
+	}
 
 	return (
 		<main className="mt-0">
@@ -90,21 +153,83 @@ const RegisterUser = () => {
 								</p>
 
 								<form onSubmit={handleSubmit} noValidate>
-									<Input name="firstName" label="Primer nombre" placeholder="Ej: María" />
-									<Input name="secondName" label="Segundo nombre (opcional)" placeholder="Ej: Luisa" />
-									<Input name="paternalLastName" label="Apellido paterno" placeholder="Ej: Pérez" />
-									<Input name="maternalLastName" label="Apellido materno (opcional)" placeholder="Ej: González" />
-									<Input name="run" label="RUN" placeholder="19011022K" inputMode="text" />
+									{formMessage ? (
+										<div className={`alert alert-${formMessage.type}`} role="alert">
+											{formMessage.text}
+											{formMessage.type === 'success' ? (
+												<span className="d-block small mt-2">
+													Se asignará un rol automáticamente según el dominio de tu correo.
+												</span>
+											) : null}
+										</div>
+									) : null}
+
 									<Input
-										name="birthdate"
-										label="Fecha de nacimiento (opcional)"
-										placeholder="dd/mm/aaaa"
-										inputMode="numeric"
-										helperText="Formato: dd/mm/aaaa"
+										name="run"
+										label="RUN"
+										placeholder="19011022K"
+										value={values.run}
+										onChange={handleInputChange}
+										helperText="Ingresa tu RUN sin puntos ni guion."
+										errorText={errors.run}
 									/>
-									<Input name="phone" label="Teléfono (opcional)" placeholder="+56 9 1234 5678" inputMode="tel" />
-									<Input name="email" label="Correo electrónico" placeholder="usuario@dominio.com" type="email" />
-									<Input name="address" label="Dirección" placeholder="Calle 123" />
+									<Input
+										name="nombre"
+										label="Nombre"
+										placeholder="María Luisa"
+										value={values.nombre}
+										onChange={handleInputChange}
+										errorText={errors.nombre}
+									/>
+									<Input
+										name="apellidos"
+										label="Apellidos"
+										placeholder="Pérez González"
+										value={values.apellidos}
+										onChange={handleInputChange}
+										errorText={errors.apellidos}
+									/>
+									<Input
+										name="correo"
+										label="Correo electrónico"
+										placeholder="usuario@dominio.com"
+										type="email"
+										value={values.correo}
+										onChange={handleInputChange}
+										helperText="Dominios permitidos: @duoc.cl, @profesor.duoc.cl, @gmail.com"
+										errorText={errors.correo}
+									/>
+									<div className="row g-3">
+										<div className="col-12 col-lg-6">
+											<label className="form-label fw-semibold" htmlFor="birthdate">
+												Fecha de nacimiento (opcional)
+											</label>
+											<input
+												type="date"
+												id="birthdate"
+												name="fechaNacimiento"
+												className={`form-control${errors.fechaNacimiento ? ' is-invalid' : ''}`}
+												max={new Date().toISOString().split('T')[0]}
+												value={values.fechaNacimiento ?? ''}
+												onChange={handleInputChange}
+											/>
+											{errors.fechaNacimiento ? (
+												<div className="invalid-feedback d-block">{errors.fechaNacimiento}</div>
+											) : (
+												<div className="form-text">Debes tener al menos {MIN_AGE} años.</div>
+											)}
+										</div>
+										<div className="col-12 col-lg-6">
+											<Input
+												name="direccion"
+												label="Dirección"
+												placeholder="Calle 123"
+												value={values.direccion}
+												onChange={handleInputChange}
+												errorText={errors.direccion}
+											/>
+										</div>
+									</div>
 
 									<div className="row g-3">
 										<div className="col-12 col-lg-6">
@@ -113,18 +238,20 @@ const RegisterUser = () => {
 											</label>
 											<select
 												id="region"
-												name="region"
-												className="form-select"
-												value={regionId}
+												className={`form-select${errors.regionId ? ' is-invalid' : ''}`}
+												value={values.regionId}
 												onChange={handleRegionChange}
 											>
-												<option value="">Sin selección</option>
-												{REGIONES_COMUNAS.map((region) => (
+												<option value="">Selecciona una región</option>
+												{regions.map((region) => (
 													<option key={region.id} value={region.id}>
 														{region.nombre}
 													</option>
 												))}
 											</select>
+											{errors.regionId ? (
+												<div className="invalid-feedback d-block">{errors.regionId}</div>
+											) : null}
 										</div>
 										<div className="col-12 col-lg-6">
 											<label className="form-label fw-semibold" htmlFor="comuna">
@@ -132,19 +259,21 @@ const RegisterUser = () => {
 											</label>
 											<select
 												id="comuna"
-												name="comuna"
-												className="form-select"
-												disabled={!regionId}
-												value={comuna}
+												className={`form-select${errors.comuna ? ' is-invalid' : ''}`}
+												disabled={!values.regionId}
+												value={values.comuna}
 												onChange={handleComunaChange}
 											>
-												<option value="">Sin selección</option>
+												<option value="">Selecciona una comuna</option>
 												{comunaOptions.map((option) => (
 													<option key={option} value={option}>
 														{option}
 													</option>
 												))}
 											</select>
+											{errors.comuna ? (
+												<div className="invalid-feedback d-block">{errors.comuna}</div>
+											) : null}
 										</div>
 									</div>
 
@@ -155,9 +284,11 @@ const RegisterUser = () => {
 										<div className="input-group">
 											<input
 												type={showPassword ? 'text' : 'password'}
-												className="form-control"
+												className={`form-control${errors.password ? ' is-invalid' : ''}`}
 												id="password"
 												name="password"
+												value={values.password}
+												onChange={handleInputChange}
 												aria-describedby="passwordHelp"
 											/>
 											<button
@@ -170,8 +301,11 @@ const RegisterUser = () => {
 											</button>
 										</div>
 										<div id="passwordHelp" className="form-text">
-											Puedes crear una contraseña segura con letras y números.
+											Debe tener entre 4 y 10 caracteres.
 										</div>
+										{errors.password ? (
+											<div className="invalid-feedback d-block">{errors.password}</div>
+										) : null}
 									</div>
 
 									<div className="mb-3">
@@ -181,9 +315,11 @@ const RegisterUser = () => {
 										<div className="input-group">
 											<input
 												type={showConfirmPassword ? 'text' : 'password'}
-												className="form-control"
+												className={`form-control${errors.confirmPassword ? ' is-invalid' : ''}`}
 												id="confirmPassword"
 												name="confirmPassword"
+												value={values.confirmPassword}
+												onChange={handleInputChange}
 											/>
 											<button
 												type="button"
@@ -194,21 +330,15 @@ const RegisterUser = () => {
 												<i className={showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'} aria-hidden="true" />
 											</button>
 										</div>
+										{errors.confirmPassword ? (
+											<div className="invalid-feedback d-block">{errors.confirmPassword}</div>
+										) : null}
 									</div>
 
-									<Input
-										name="welcomeCode"
-										label="Código de bienvenida (opcional)"
-										placeholder="Ej: MILSABORES2025"
-										helperText="Si tienes un código, ingrésalo aquí. Puedes dejarlo en blanco."
-									/>
-
 									<div className="form-check mb-4">
-										<input type="checkbox" className="form-check-input" id="terms" name="terms" />
+										<input type="checkbox" className="form-check-input" id="terms" name="terms" required />
 										<label className="form-check-label" htmlFor="terms">
-											<a className="link-body-emphasis" href="/terminos">
-												Acepto los términos y condiciones
-											</a>
+											Acepto los <a className="link-body-emphasis" href="/terminos">términos y condiciones</a>
 										</label>
 									</div>
 

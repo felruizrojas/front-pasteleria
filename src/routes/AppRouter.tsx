@@ -17,7 +17,10 @@ const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'))
 const TermsPage = lazy(() => import('@/features/legal/TermsPage'))
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'))
 
-const router = createBrowserRouter([
+const basename = (import.meta.env.BASE_URL ?? '/').replace(/\/*$/, '') || '/'
+
+const router = createBrowserRouter(
+[
 	{
 		element: <AppLayout />,
 		children: [
@@ -37,7 +40,9 @@ const router = createBrowserRouter([
 	{ path: '/login', element: <LoginRoute /> },
 	{ path: '/register', element: <RegisterUserPage /> },
 	{ path: '*', element: <Navigate to="/" replace /> },
-])
+],
+{ basename },
+)
 
 const AppRouter = () => (
 	<Suspense

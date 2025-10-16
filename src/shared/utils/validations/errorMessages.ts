@@ -1,0 +1,16 @@
+export const errorMessages = {
+	required: (field: string) => `${field} es obligatorio`,
+	maxLength: (field: string, max: number) => `${field} no puede superar ${max} caracteres`,
+	minLength: (field: string, min: number) => `${field} debe tener al menos ${min} caracteres`,
+	emailFormat: 'Ingresa un correo válido',
+	emailDomain: (domains: string[]) => `El correo debe usar alguno de estos dominios: ${domains.join(', ')}`,
+	credentials: 'Correo o contraseña incorrectos',
+	runFormat: 'RUN inválido. Escribe el número sin puntos ni guion, seguido del dígito verificador.',
+	runVerifier: 'El dígito verificador del RUN no es válido',
+	ageRestriction: (minAge: number) => `Debes tener al menos ${minAge} años`,
+	selectionRequired: (field: string) => `Selecciona una opción de ${field}`,
+	passwordMismatch: 'Las contraseñas no coinciden',
+	duplicateEmail: 'Este correo ya está registrado',
+	negativePrice: 'El precio no puede ser negativo',
+	priceOrder: 'El precio mínimo no puede superar al máximo',
+} as const

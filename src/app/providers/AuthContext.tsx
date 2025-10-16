@@ -1,50 +1,47 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 
+import { authenticateCredentials } from '@/shared/utils/validations/authValidations'
+import { LOCAL_STORAGE_KEYS } from '@/shared/utils/storage/initLocalData'
+import { getLocalItem, removeLocalItem, setLocalItem } from '@/shared/utils/storage/localStorageUtils'
+import type { StoredUser } from '@/shared/types/user'
+
 import AuthContext from './auth-context'
-import type { AuthContextValue, AuthCredentials, AuthUser } from './auth.types'
+import type { AuthContextValue, AuthCredentials, AuthUser, UserRole } from './auth.types'
 
 export type { AuthCredentials, AuthUser, UserRole } from './auth.types'
 
-const AUTH_STORAGE_KEY = 'pasteleria.auth.user'
+const ACTIVE_USER_KEY = LOCAL_STORAGE_KEYS.activeUser
 
-const usersDirectory: Record<string, AuthUser & { password: string }> = {
-	'admin@mil-sabores.com': {
-		id: '1',
-		name: 'Administrador',
-		email: 'admin@mil-sabores.com',
-		role: 'admin',
-		password: 'admin123',
-	},
-	'cliente@mil-sabores.com': {
-		id: '2',
-		name: 'Cliente Demo',
-		email: 'cliente@mil-sabores.com',
-		role: 'customer',
-		password: 'cliente123',
-	},
+const mapStoredRole = (role: StoredUser['tipoUsuario']): UserRole => {
+	switch (role) {
+		case 'Administrador':
+			return 'admin'
+		case 'Vendedor':
+			return 'seller'
+		default:
+			return 'customer'
+	}
 }
 
+const buildAuthUser = (stored: StoredUser): AuthUser => ({
+	id: stored.id,
+	name: `${stored.nombre} ${stored.apellidos}`.trim(),
+	email: stored.correo,
+	role: mapStoredRole(stored.tipoUsuario),
+})
+
 const readPersistedUser = (): AuthUser | null => {
-	if (typeof window === 'undefined') {
+	const stored = getLocalItem<StoredUser>(ACTIVE_USER_KEY)
+	if (!stored) {
 		return null
 	}
 
 	try {
-		const raw = window.localStorage.getItem(AUTH_STORAGE_KEY)
-		if (!raw) {
-			return null
-		}
-
-		const parsed: AuthUser = JSON.parse(raw)
-		if (parsed && parsed.id && parsed.email && parsed.role) {
-			return parsed
-		}
+		return buildAuthUser(stored)
 	} catch {
 		return null
 	}
-
-	return null
 }
 
 type AuthProviderProps = {
@@ -56,14 +53,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	const [loading, setLoading] = useState<boolean>(false)
 
 	useEffect(() => {
-		if (typeof window === 'undefined') {
-			return
-		}
-
-		if (user) {
-			window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user))
-		} else {
-			window.localStorage.removeItem(AUTH_STORAGE_KEY)
+		if (!user) {
+			removeLocalItem(ACTIVE_USER_KEY)
 		}
 	}, [user])
 
@@ -71,21 +62,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		setLoading(true)
 
 		try {
-			await new Promise((resolve) => setTimeout(resolve, 400))
+			await new Promise((resolve) => setTimeout(resolve, 350))
 
-			const normalizedEmail = email.trim().toLowerCase()
-			const registeredUser = usersDirectory[normalizedEmail] || null
-
-			if (!registeredUser || registeredUser.password !== password) {
-				throw new Error('Credenciales invalidas')
+			const result = authenticateCredentials({ email, password })
+			if (!result.success || !result.user) {
+				throw new Error(result.error ?? 'Credenciales invalidas')
 			}
 
-			setUser({
-				id: registeredUser.id,
-				name: registeredUser.name,
-				email: registeredUser.email,
-				role: registeredUser.role,
-			})
+			setLocalItem(ACTIVE_USER_KEY, result.user)
+			setUser(buildAuthUser(result.user))
 		} finally {
 			setLoading(false)
 		}
@@ -93,6 +78,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
 	const logout = useCallback(() => {
 		setUser(null)
+		removeLocalItem(ACTIVE_USER_KEY)
 	}, [])
 
 	const value = useMemo<AuthContextValue>(

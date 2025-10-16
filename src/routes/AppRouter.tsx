@@ -3,23 +3,23 @@ import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import LoginRoute from '@/routes/LoginRoute'
 
-const Layout = lazy(() => import('@/components/layout/Layout'))
-const HomePage = lazy(() => import('@/pages/Home/Home'))
-const AboutPage = lazy(() => import('@/pages/about/About'))
-const ContactPage = lazy(() => import('@/pages/contact/Contact'))
-const MenuPage = lazy(() => import('@/pages/menu/menu'))
-const MenuDetailsPage = lazy(() => import('@/pages/menu/menu_details'))
-const ProfilePage = lazy(() => import('@/pages/profile/Profile'))
-const BlogPage = lazy(() => import('@/pages/blog/Blog'))
-const CartPage = lazy(() => import('@/pages/cart/Cart'))
-const RegisterUserPage = lazy(() => import('@/pages/registerUser/registerUser'))
-const PrivacyPage = lazy(() => import('@/pages/privacy/Privacy'))
-const TermsPage = lazy(() => import('@/pages/terms/Terms'))
-const ResetPasswordPage = lazy(() => import('@/pages/resetPassword/ResetPassword'))
+const AppLayout = lazy(() => import('@/app/AppLayout'))
+const HomePage = lazy(() => import('@/features/home/HomePage'))
+const AboutPage = lazy(() => import('@/features/about/AboutPage'))
+const ContactPage = lazy(() => import('@/features/contact/ContactPage'))
+const MenuPage = lazy(() => import('@/features/menu/MenuPage'))
+const MenuDetailsPage = lazy(() => import('@/features/menu/MenuDetailsPage'))
+const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'))
+const BlogPage = lazy(() => import('@/features/blog/BlogPage'))
+const CartPage = lazy(() => import('@/features/cart/CartPage'))
+const RegisterUserPage = lazy(() => import('@/features/auth/RegisterUserPage'))
+const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'))
+const TermsPage = lazy(() => import('@/features/legal/TermsPage'))
+const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'))
 
 const router = createBrowserRouter([
 	{
-		element: <Layout />,
+		element: <AppLayout />,
 		children: [
 			{ index: true, element: <HomePage /> },
 			{ path: 'about', element: <AboutPage /> },

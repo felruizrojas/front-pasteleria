@@ -28,6 +28,12 @@ export type UserFormValues = {
 	confirmPassword?: string
 }
 
+export type ResetPasswordFormValues = {
+	email: string
+	password: string
+	confirmPassword: string
+}
+
 type UserValidationOptions = {
 	mode: 'create' | 'update'
 }
@@ -148,10 +154,14 @@ export const validateUserForm = (
 		errors.correo = errorMessages.maxLength('El correo', 100)
 	} else if (!EMAIL_REGEX.test(correo)) {
 		errors.correo = errorMessages.emailFormat
-	} else if (!ALLOWED_EMAIL_DOMAINS.some((domain) => correo.toLowerCase().endsWith(domain))) {
-		errors.correo = errorMessages.emailDomain([...ALLOWED_EMAIL_DOMAINS])
-	} else if (emailExists(correo, values.id)) {
-		errors.correo = errorMessages.duplicateEmail
+	} else {
+		const correoDomain = correo.toLowerCase().split('@')[1] ?? ''
+		const isAllowedDomain = ALLOWED_EMAIL_DOMAINS.some((allowed) => allowed === correoDomain)
+		if (!isAllowedDomain) {
+			errors.correo = errorMessages.emailDomain([...ALLOWED_EMAIL_DOMAINS])
+		} else if (emailExists(correo, values.id)) {
+			errors.correo = errorMessages.duplicateEmail
+		}
 	}
 
 	if (values.fechaNacimiento) {
@@ -197,6 +207,49 @@ export const validateUserForm = (
 				errors.confirmPassword = errorMessages.passwordMismatch
 			}
 		}
+	}
+
+	return {
+		isValid: Object.keys(errors).length === 0,
+		errors,
+	}
+}
+
+export const validateResetPasswordForm = (
+	values: ResetPasswordFormValues,
+): ValidationResult<ResetPasswordFormValues> => {
+	const errors: ValidationResult<ResetPasswordFormValues>['errors'] = {}
+
+	const email = values.email?.trim() ?? ''
+	const password = values.password?.trim() ?? ''
+	const confirmPassword = values.confirmPassword?.trim() ?? ''
+
+	if (!email) {
+		errors.email = errorMessages.required('El correo')
+	} else if (email.length > 100) {
+		errors.email = errorMessages.maxLength('El correo', 100)
+	} else if (!EMAIL_REGEX.test(email)) {
+		errors.email = errorMessages.emailFormat
+	} else {
+		const correoDomain = email.toLowerCase().split('@')[1] ?? ''
+		const isAllowedDomain = ALLOWED_EMAIL_DOMAINS.some((allowed) => allowed === correoDomain)
+		if (!isAllowedDomain) {
+			errors.email = errorMessages.emailDomain([...ALLOWED_EMAIL_DOMAINS])
+		} else if (!findUserByEmail(email)) {
+			errors.email = errorMessages.userNotFound
+		}
+	}
+
+	if (!password) {
+		errors.password = errorMessages.required('La contraseña')
+	} else if (password.length < 4 || password.length > 10) {
+		errors.password = 'La contraseña debe tener entre 4 y 10 caracteres'
+	}
+
+	if (!confirmPassword) {
+		errors.confirmPassword = errorMessages.required('La confirmación de contraseña')
+	} else if (password && password !== confirmPassword) {
+		errors.confirmPassword = errorMessages.passwordMismatch
 	}
 
 	return {

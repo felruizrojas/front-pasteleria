@@ -13,4 +13,5 @@ export const errorMessages = {
 	duplicateEmail: 'Este correo ya está registrado',
 	negativePrice: 'El precio no puede ser negativo',
 	priceOrder: 'El precio mínimo no puede superar al máximo',
+	userNotFound: 'No encontramos una cuenta asociada a este correo',
 } as const

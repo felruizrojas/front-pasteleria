@@ -6,9 +6,11 @@ const LoginRoute = () => {
 	const location = useLocation()
 
 	useEffect(() => {
-		const from = (location.state as { from?: string } | null)?.from ?? '/'
+		const state = location.state as { from?: string } | null
+		const from = state?.from ?? '/'
 		const target = from === '/login' ? '/' : from
-		navigate(target, { replace: true, state: { openLogin: true } })
+
+		navigate(target, { replace: true, state: { ...state, openLogin: true } })
 	}, [navigate, location])
 
 	return null

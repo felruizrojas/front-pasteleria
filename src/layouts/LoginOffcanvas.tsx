@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import type { ChangeEvent, FocusEvent, FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button, Input } from '@/components/common'
@@ -13,24 +13,63 @@ const LoginOffcanvas = () => {
 	const { login, loading } = useAuth()
 	const [values, setValues] = useState<LoginFormValues>({ email: '', password: '' })
 	const [errors, setErrors] = useState<ValidationErrors<LoginFormValues>>({})
+	const [touched, setTouched] = useState<Partial<Record<keyof LoginFormValues, boolean>>>({})
 	const [formError, setFormError] = useState<string | null>(null)
 
 	const handleNavigate = useCallback(() => {
 		hideOffcanvas('offcanvasLogin')
 	}, [])
 
+	const runValidation = useCallback(
+		(nextValues: LoginFormValues, nextTouched: Partial<Record<keyof LoginFormValues, boolean>>) => {
+			const validation = validateLoginForm(nextValues, { requireExistingEmail: true })
+			const filtered: ValidationErrors<LoginFormValues> = {}
+			;(Object.keys(nextTouched) as Array<keyof LoginFormValues>).forEach((key) => {
+				if (!nextTouched[key]) {
+					return
+				}
+				const message = validation.errors[key]
+				if (message) {
+					filtered[key] = message
+				}
+			})
+			setErrors(filtered)
+			return validation
+		},
+		[setErrors],
+	)
+
 	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.currentTarget
-		setValues((previous) => ({ ...previous, [name]: value }))
-		setErrors((previous) => ({ ...previous, [name]: undefined }))
+		const field = name as keyof LoginFormValues
+		const nextValues = { ...values, [field]: value }
+		const nextTouched: Partial<Record<keyof LoginFormValues, boolean>> = {
+			...touched,
+			[field]: true,
+		}
+		runValidation(nextValues, nextTouched)
+		setValues(nextValues)
+		setTouched(nextTouched)
 		setFormError(null)
+	}
+
+	const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
+		const { name } = event.currentTarget
+		if (!name) {
+			return
+		}
+		const field = name as keyof LoginFormValues
+		const nextTouched = { ...touched, [field]: true }
+		runValidation(values, nextTouched)
+		setTouched(nextTouched)
 	}
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		const validation = validateLoginForm(values)
+		const allTouched: Partial<Record<keyof LoginFormValues, boolean>> = { email: true, password: true }
+		const validation = runValidation(values, allTouched)
+		setTouched(allTouched)
 		if (!validation.isValid) {
-			setErrors(validation.errors)
 			return
 		}
 
@@ -39,6 +78,7 @@ const LoginOffcanvas = () => {
 			hideOffcanvas('offcanvasLogin')
 			setValues({ email: '', password: '' })
 			setErrors({})
+			setTouched({})
 			setFormError(null)
 		} catch (error) {
 			if (error instanceof Error) {
@@ -80,6 +120,7 @@ const LoginOffcanvas = () => {
 						placeholder="tucorreo@dominio.com"
 							value={values.email}
 							onChange={handleChange}
+						onBlur={handleBlur}
 							errorText={errors.email}
 						containerClassName="mb-3"
 					/>
@@ -93,6 +134,7 @@ const LoginOffcanvas = () => {
 							value={values.password}
 							onChange={handleChange}
 							autoComplete="current-password"
+						onBlur={handleBlur}
 							errorText={errors.password}
 						containerClassName="mb-3"
 					/>

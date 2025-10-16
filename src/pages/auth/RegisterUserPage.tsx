@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { ChangeEvent, FocusEvent, FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/components/common'
@@ -35,6 +35,7 @@ const RegisterUserPage = () => {
 		confirmPassword: '',
 	})
 	const [errors, setErrors] = useState<ValidationErrors<UserFormValues>>({})
+	const [touched, setTouched] = useState<Partial<Record<keyof UserFormValues, boolean>>>({})
 	const [formMessage, setFormMessage] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -62,6 +63,25 @@ const RegisterUserPage = () => {
 		setRegions(regionData)
 	}, [])
 
+	const runValidation = useCallback(
+		(nextValues: UserFormValues, nextTouched: Partial<Record<keyof UserFormValues, boolean>>) => {
+			const validation = validateUserForm(nextValues, { mode: 'create' })
+			const filtered: ValidationErrors<UserFormValues> = {}
+			;(Object.keys(nextTouched) as Array<keyof UserFormValues>).forEach((key) => {
+				if (!nextTouched[key]) {
+					return
+				}
+				const message = validation.errors[key]
+				if (message) {
+					filtered[key] = message
+				}
+			})
+			setErrors(filtered)
+			return validation
+		},
+		[setErrors],
+	)
+
 	const comunaOptions = useMemo(
 		() => regions.find((region) => region.id === values.regionId)?.comunas ?? [],
 		[regions, values.regionId],
@@ -69,30 +89,63 @@ const RegisterUserPage = () => {
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.currentTarget
-		setValues((previous) => ({ ...previous, [name]: value }))
-		setErrors((previous) => ({ ...previous, [name]: undefined }))
+		const field = name as keyof UserFormValues
+		const nextValues = { ...values, [field]: value }
+		const nextTouched = { ...touched, [field]: true }
+		runValidation(nextValues, nextTouched)
+		setValues(nextValues)
+		setTouched(nextTouched)
 		setFormMessage(null)
+	}
+
+	const handleInputBlur = (event: FocusEvent<HTMLInputElement>) => {
+		const { name } = event.currentTarget
+		if (!name) {
+			return
+		}
+		const field = name as keyof UserFormValues
+		const nextTouched = { ...touched, [field]: true }
+		runValidation(values, nextTouched)
+		setTouched(nextTouched)
 	}
 
 	const handleRegionChange = (event: ChangeEvent<HTMLSelectElement>) => {
 		const nextRegion = event.currentTarget.value
-		setValues((previous) => ({ ...previous, regionId: nextRegion, comuna: '' }))
-		setErrors((previous) => ({ ...previous, regionId: undefined, comuna: undefined }))
+		const nextValues = { ...values, regionId: nextRegion, comuna: '' }
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
+			...touched,
+			regionId: true,
+			comuna: true,
+		}
+		runValidation(nextValues, nextTouched)
+		setValues(nextValues)
+		setTouched(nextTouched)
 		setFormMessage(null)
 	}
 
 	const handleComunaChange = (event: ChangeEvent<HTMLSelectElement>) => {
 		const nextComuna = event.currentTarget.value
-		setValues((previous) => ({ ...previous, comuna: nextComuna }))
-		setErrors((previous) => ({ ...previous, comuna: undefined }))
+		const nextValues = { ...values, comuna: nextComuna }
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
+			...touched,
+			comuna: true,
+		}
+		runValidation(nextValues, nextTouched)
+		setValues(nextValues)
+		setTouched(nextTouched)
 		setFormMessage(null)
 	}
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		const validation = validateUserForm(values, { mode: 'create' })
+		const fieldKeys = Object.keys(values) as Array<keyof UserFormValues>
+		const allTouched: Partial<Record<keyof UserFormValues, boolean>> = {}
+		fieldKeys.forEach((key) => {
+			allTouched[key] = true
+		})
+		const validation = runValidation(values, allTouched)
+		setTouched(allTouched)
 		if (!validation.isValid) {
-			setErrors(validation.errors)
 			setFormMessage({ type: 'danger', text: 'Por favor corrige los campos marcados.' })
 			return
 		}
@@ -169,6 +222,7 @@ const RegisterUserPage = () => {
 										placeholder="19011022K"
 										value={values.run}
 										onChange={handleInputChange}
+										onBlur={handleInputBlur}
 										helperText="Ingresa tu RUN sin puntos ni guion."
 										errorText={errors.run}
 									/>
@@ -178,6 +232,7 @@ const RegisterUserPage = () => {
 										placeholder="María Luisa"
 										value={values.nombre}
 										onChange={handleInputChange}
+										onBlur={handleInputBlur}
 										errorText={errors.nombre}
 									/>
 									<Input
@@ -186,6 +241,7 @@ const RegisterUserPage = () => {
 										placeholder="Pérez González"
 										value={values.apellidos}
 										onChange={handleInputChange}
+										onBlur={handleInputBlur}
 										errorText={errors.apellidos}
 									/>
 									<Input
@@ -195,6 +251,7 @@ const RegisterUserPage = () => {
 										type="email"
 										value={values.correo}
 										onChange={handleInputChange}
+										onBlur={handleInputBlur}
 										helperText="Dominios permitidos: @duoc.cl, @profesor.duoc.cl, @gmail.com"
 										errorText={errors.correo}
 									/>
@@ -211,6 +268,7 @@ const RegisterUserPage = () => {
 												max={new Date().toISOString().split('T')[0]}
 												value={values.fechaNacimiento ?? ''}
 												onChange={handleInputChange}
+												onBlur={handleInputBlur}
 											/>
 											{errors.fechaNacimiento ? (
 												<div className="invalid-feedback d-block">{errors.fechaNacimiento}</div>
@@ -225,6 +283,7 @@ const RegisterUserPage = () => {
 												placeholder="Calle 123"
 												value={values.direccion}
 												onChange={handleInputChange}
+												onBlur={handleInputBlur}
 												errorText={errors.direccion}
 											/>
 										</div>
@@ -288,6 +347,7 @@ const RegisterUserPage = () => {
 												name="password"
 												value={values.password}
 												onChange={handleInputChange}
+												onBlur={handleInputBlur}
 												aria-describedby="passwordHelp"
 											/>
 											<button
@@ -319,6 +379,7 @@ const RegisterUserPage = () => {
 												name="confirmPassword"
 												value={values.confirmPassword}
 												onChange={handleInputChange}
+												onBlur={handleInputBlur}
 											/>
 											<button
 												type="button"

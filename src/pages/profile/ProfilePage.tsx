@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { ChangeEvent, FocusEvent, FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/components/common'
@@ -40,7 +40,51 @@ const ProfilePage = () => {
 	const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
 	const [values, setValues] = useState<UserFormValues>(createInitialValues())
 	const [errors, setErrors] = useState<ValidationErrors<UserFormValues>>({})
+	const [touched, setTouched] = useState<Partial<Record<keyof UserFormValues, boolean>>>({})
 	const [feedback, setFeedback] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
+
+	const runValidation = useCallback(
+		(nextValues: UserFormValues, nextTouched: Partial<Record<keyof UserFormValues, boolean>>) => {
+			const validation = validateUserForm(nextValues, { mode: 'update' })
+			const filtered: ValidationErrors<UserFormValues> = {}
+			;(Object.keys(nextTouched) as Array<keyof UserFormValues>).forEach((key) => {
+				if (!nextTouched[key]) {
+					return
+				}
+				const message = validation.errors[key]
+				if (message) {
+					filtered[key] = message
+				}
+			})
+			setErrors(filtered)
+			return validation
+		},
+		[setErrors],
+	)
+
+	const roleShortcut = useMemo(() => {
+		if (!user) {
+			return null
+		}
+
+		if (user.role === 'admin') {
+			return {
+				label: 'Ir a la vista de administrador',
+				to: '/admin',
+				icon: 'bi-speedometer2',
+			}
+		}
+
+		if (user.role === 'seller') {
+			return {
+				label: 'Ir a la vista de vendedor',
+				to: '/seller',
+				icon: 'bi-shop',
+			}
+		}
+
+		return null
+	}, [user])
 
 	useEffect(() => {
 		const regionData = getLocalData<typeof regions[number]>(LOCAL_STORAGE_KEYS.regiones)
@@ -56,6 +100,8 @@ const ProfilePage = () => {
 
 		setCurrentUser(stored)
 		setValues(createInitialValues(stored))
+		setErrors({})
+		setTouched({})
 	}, [])
 
 	const comunaOptions = useMemo(
@@ -84,22 +130,50 @@ const ProfilePage = () => {
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.currentTarget
-		setValues((previous) => ({ ...previous, [name]: value }))
-		setErrors((previous) => ({ ...previous, [name]: undefined }))
+		const field = name as keyof UserFormValues
+		const nextValues = { ...values, [field]: value }
+		const nextTouched = { ...touched, [field]: true }
+		runValidation(nextValues, nextTouched)
+		setValues(nextValues)
+		setTouched(nextTouched)
 		setFeedback(null)
+	}
+
+	const handleInputBlur = (event: FocusEvent<HTMLInputElement>) => {
+		const { name } = event.currentTarget
+		if (!name) {
+			return
+		}
+		const field = name as keyof UserFormValues
+		const nextTouched = { ...touched, [field]: true }
+		runValidation(values, nextTouched)
+		setTouched(nextTouched)
 	}
 
 	const handleRegionChange = (event: ChangeEvent<HTMLSelectElement>) => {
 		const nextRegion = event.currentTarget.value
-		setValues((previous) => ({ ...previous, regionId: nextRegion, comuna: '' }))
-		setErrors((previous) => ({ ...previous, regionId: undefined, comuna: undefined }))
+		const nextValues = { ...values, regionId: nextRegion, comuna: '' }
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
+			...touched,
+			regionId: true,
+			comuna: true,
+		}
+		runValidation(nextValues, nextTouched)
+		setValues(nextValues)
+		setTouched(nextTouched)
 		setFeedback(null)
 	}
 
 	const handleComunaChange = (event: ChangeEvent<HTMLSelectElement>) => {
 		const nextComuna = event.currentTarget.value
-		setValues((previous) => ({ ...previous, comuna: nextComuna }))
-		setErrors((previous) => ({ ...previous, comuna: undefined }))
+		const nextValues = { ...values, comuna: nextComuna }
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
+			...touched,
+			comuna: true,
+		}
+		runValidation(nextValues, nextTouched)
+		setValues(nextValues)
+		setTouched(nextTouched)
 		setFeedback(null)
 	}
 
@@ -110,9 +184,14 @@ const ProfilePage = () => {
 			return
 		}
 
-		const validation = validateUserForm(values, { mode: 'update' })
+		const fieldKeys = Object.keys(values) as Array<keyof UserFormValues>
+		const allTouched: Partial<Record<keyof UserFormValues, boolean>> = {}
+		fieldKeys.forEach((key) => {
+			allTouched[key] = true
+		})
+		const validation = runValidation(values, allTouched)
+		setTouched(allTouched)
 		if (!validation.isValid) {
-			setErrors(validation.errors)
 			setFeedback({ type: 'danger', text: 'Corrige los campos marcados e inténtalo nuevamente.' })
 			return
 		}
@@ -122,6 +201,8 @@ const ProfilePage = () => {
 		setLocalItem(LOCAL_STORAGE_KEYS.activeUser, record)
 		setCurrentUser(record)
 		setValues(createInitialValues(record))
+		setErrors({})
+		setTouched({})
 		setFeedback({ type: 'success', text: 'Datos actualizados con éxito.' })
 
 		await login({ email: record.correo, password: record.password })
@@ -168,6 +249,11 @@ const ProfilePage = () => {
 									<Button as="link" to="/cart" variant="mint">
 										<i className="bi bi-receipt me-1" aria-hidden="true" /> Mis pedidos
 									</Button>
+									{roleShortcut ? (
+										<Button as="link" to={roleShortcut.to} variant="mint">
+											<i className={`bi ${roleShortcut.icon} me-1`} aria-hidden="true" /> {roleShortcut.label}
+										</Button>
+									) : null}
 									<Button
 										type="button"
 										variant="strawberry"
@@ -200,6 +286,7 @@ const ProfilePage = () => {
 											placeholder="19011022K"
 											value={values.run}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 											errorText={errors.run}
 										/>
 									</div>
@@ -214,6 +301,7 @@ const ProfilePage = () => {
 											className={`form-control${errors.fechaNacimiento ? ' is-invalid' : ''}`}
 											value={values.fechaNacimiento ?? ''}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 										/>
 										{errors.fechaNacimiento ? (
 											<div className="invalid-feedback d-block">{errors.fechaNacimiento}</div>
@@ -226,6 +314,7 @@ const ProfilePage = () => {
 											placeholder="María"
 											value={values.nombre}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 											errorText={errors.nombre}
 										/>
 									</div>
@@ -236,6 +325,7 @@ const ProfilePage = () => {
 											placeholder="Pérez González"
 											value={values.apellidos}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 											errorText={errors.apellidos}
 										/>
 									</div>
@@ -247,6 +337,7 @@ const ProfilePage = () => {
 											placeholder="usuario@dominio.com"
 											value={values.correo}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 											helperText="El rol se asigna automáticamente según el dominio."
 											errorText={errors.correo}
 										/>
@@ -301,6 +392,7 @@ const ProfilePage = () => {
 											placeholder="Calle 123"
 											value={values.direccion}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 											errorText={errors.direccion}
 										/>
 									</div>
@@ -312,6 +404,7 @@ const ProfilePage = () => {
 											placeholder="••••"
 											value={values.password}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 											helperText="Déjalo en blanco para mantener tu contraseña actual."
 											errorText={errors.password}
 										/>
@@ -324,6 +417,7 @@ const ProfilePage = () => {
 											placeholder="••••"
 											value={values.confirmPassword}
 											onChange={handleInputChange}
+											onBlur={handleInputBlur}
 											errorText={errors.confirmPassword}
 										/>
 									</div>

@@ -12,6 +12,10 @@ export type LoginFormValues = {
 	password: string
 }
 
+type LoginValidationOptions = {
+	requireExistingEmail?: boolean
+}
+
 type AuthenticationResult = {
 	success: boolean
 	error?: string
@@ -27,9 +31,21 @@ const extractDomain = (email: string) => {
 	return parts.length === 2 ? parts[1] : ''
 }
 
-const isAllowedDomain = (email: string) => ALLOWED_EMAIL_DOMAINS.some((domain) => extractDomain(email).endsWith(domain))
+const isAllowedDomain = (email: string) => {
+	const domain = extractDomain(email)
+	return ALLOWED_EMAIL_DOMAINS.some((allowed) => domain === allowed)
+}
 
-export const validateLoginForm = (values: LoginFormValues): ValidationResult<LoginFormValues> => {
+const emailExists = (email: string) => {
+	const users = getLocalData<StoredUser>(LOCAL_STORAGE_KEYS.usuarios)
+	const normalized = normalizeEmail(email)
+	return users.some((user) => normalizeEmail(user.correo) === normalized)
+}
+
+export const validateLoginForm = (
+	values: LoginFormValues,
+	options: LoginValidationOptions = {},
+): ValidationResult<LoginFormValues> => {
 	const errors: ValidationResult<LoginFormValues>['errors'] = {}
 
 	const email = values.email?.trim() ?? ''
@@ -43,6 +59,8 @@ export const validateLoginForm = (values: LoginFormValues): ValidationResult<Log
 		errors.email = errorMessages.emailFormat
 	} else if (!isAllowedDomain(email)) {
 		errors.email = errorMessages.emailDomain([...ALLOWED_EMAIL_DOMAINS])
+	} else if (options.requireExistingEmail && !emailExists(email)) {
+		errors.email = errorMessages.userNotFound
 	}
 
 	if (!password) {

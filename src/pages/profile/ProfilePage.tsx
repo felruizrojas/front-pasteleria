@@ -102,7 +102,7 @@ const ProfilePage = () => {
 			messages.push({ id: 'felices50', text: 'Aplicamos un 10% de descuento gracias al código FELICES50.' })
 		}
 
-		if (domain.endsWith('duoc.cl')) {
+		if (domain === 'duoc.cl') {
 			messages.push({
 				id: 'duoc-birthday',
 				text: 'Tienes derecho a una torta gratis en tu cumpleaños por pertenecer a la comunidad Duoc UC.',

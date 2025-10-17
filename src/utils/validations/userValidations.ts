@@ -340,10 +340,8 @@ export const saveUserRecord = (record: StoredUser): StoredUser[] => {
 	}
 
 	const existing = users[index]
-	if (existing.tipoUsuario === 'SuperAdmin') {
-		return users
-	}
-
+	// Mantener el tipo de usuario original (no permitir cambiar rol aquí),
+	// pero permitir que la cuenta SuperAdmin también se actualice desde el perfil.
 	users[index] = {
 		...existing,
 		...record,

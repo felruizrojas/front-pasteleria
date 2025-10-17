@@ -122,3 +122,5 @@ https://felruizrojas.github.io/front-pasteleria/
 
 ## 📜 Licencia
 Este proyecto fue desarrollado con fines académicos para Duoc UC.
+
+******************************************************

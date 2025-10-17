@@ -28,7 +28,9 @@ El sistema permite:
 - ⚛️ React 18 + TypeScript  
 - 🎨 Bootstrap 5.3 + Bootstrap Icons  
 - ⚡ Vite  
-- 📦 Node.js + npm  
+- 📦 Node.js + npm
+
+[![Programming Skills](https://skillicons.dev/icons?i=html,css,bootstrap,react,typescript)](https://skillicons.dev)
 
 ## 🚀 Instalación y Ejecución
 

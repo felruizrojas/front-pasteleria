@@ -37,7 +37,7 @@ body {
 }
 
 .navbar .brand-name {
-  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  font-size: clamp(0.95rem, 1.6vw, 1.35rem);
 }
 
 /* Títulos con jerarquía de color */

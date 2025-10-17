@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { Button } from '@/components/common'
+import { Breadcrumbs, Button } from '@/components/common'
+import type { BreadcrumbItem } from '@/components/common'
 import type { Producto } from '@/data/menu_datos'
 import { catalogoDatos } from '@/data/menu_datos'
 import cx from '@/utils/cx'
@@ -141,6 +142,49 @@ const MenuDetailsPage = () => {
 
 	const recommended = useRecommendedProducts(allProducts, producto)
 
+	const breadcrumbItems = useMemo(() => {
+		const base: BreadcrumbItem[] = [
+			{ label: 'Inicio', to: '/' },
+			{ label: 'Nuestra carta', to: '/menu' },
+		]
+
+		if (!producto) {
+			return base
+		}
+
+		if (categoria) {
+			base.push({ label: categoria.nombre_categoria, to: `/menu?categoria=${categoria.id_categoria}` })
+		}
+
+		base.push({ label: producto.nombre_producto })
+
+		return base
+	}, [categoria, producto])
+
+	const maxQuantity = producto?.stock ?? 1
+
+	const clampQuantity = (value: number) => {
+		if (Number.isNaN(value) || value <= 0) {
+			return 1
+		}
+		return Math.min(Math.floor(value), maxQuantity)
+	}
+
+	const handleQuantityInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const rawValue = event.target.value.trim()
+		if (rawValue === '') {
+			setQuantity(1)
+			return
+		}
+
+		const parsed = Number(rawValue)
+		setQuantity(clampQuantity(parsed))
+	}
+
+	const handleQuantityBlur = () => {
+		setQuantity((current) => clampQuantity(current))
+	}
+
 	const galleryImages = useMemo(() => {
 		if (!producto) return []
 		const slug = toSlug(producto.nombre_producto)
@@ -151,9 +195,15 @@ const MenuDetailsPage = () => {
 	}, [producto])
 
 	const [mensaje, setMensaje] = useState('')
+	const [quantity, setQuantity] = useState(1)
 	const [feedback, setFeedback] = useState<string | null>(null)
 	const [selectedImage, setSelectedImage] = useState<string | null>(null)
 	const feedbackTimeout = useRef<number | null>(null)
+
+	useEffect(() => {
+		if (!producto) return
+		setQuantity(1)
+	}, [producto])
 
 	useEffect(() => {
 		if (!producto) return
@@ -192,14 +242,19 @@ const MenuDetailsPage = () => {
 
 	const handleAddToCart = () => {
 		if (!producto) return
+
+		const safeQuantity = clampQuantity(quantity)
+		if (safeQuantity !== quantity) {
+			setQuantity(safeQuantity)
+		}
 		const trimmed = mensaje.trim()
 		persistMessage(producto.codigo_producto, trimmed)
 		updateCartMessages(producto.codigo_producto, trimmed)
-		setFeedback(
-			trimmed
-				? 'Mensaje personalizado guardado. Puedes revisarlo en tu carrito.'
-				: 'Mensaje eliminado para este producto.',
-		)
+		const quantityLabel = safeQuantity === 1 ? '1 unidad' : `${safeQuantity} unidades`
+		const messageFeedback = trimmed
+			? 'Mensaje personalizado guardado. Puedes revisarlo en tu carrito.'
+			: 'Mensaje eliminado para este producto.'
+		setFeedback(`Cantidad seleccionada: ${quantityLabel}. ${messageFeedback}`)
 		if (feedbackTimeout.current) {
 			window.clearTimeout(feedbackTimeout.current)
 		}
@@ -228,35 +283,20 @@ const MenuDetailsPage = () => {
 
 	return (
 		<section className="container py-4 py-lg-5">
-			<nav aria-label="breadcrumb" className="mb-4">
-				<ol className="breadcrumb small mb-0">
-					<li className="breadcrumb-item">
-						<Link to="/">Inicio</Link>
-					</li>
-					<li className="breadcrumb-item">
-						<Link to="/menu">Carta</Link>
-					</li>
-					<li className={cx('breadcrumb-item', { active: !categoria })} aria-current={categoria ? undefined : 'page'}>
-						{categoria ? categoria.nombre_categoria : producto.nombre_producto}
-					</li>
-					{categoria ? (
-						<li className="breadcrumb-item active" aria-current="page">
-							{producto.nombre_producto}
-						</li>
-					) : null}
-				</ol>
-			</nav>
+			<Breadcrumbs items={breadcrumbItems} className="mb-4" />
 
 			<div className="row g-4">
 				<div className="col-lg-7">
-					<div className="card card-soft shadow-soft h-100">
-						<div className="card-body p-3 p-md-4">
-							<div className="ratio ratio-4x3 mb-3">
-								<img
-									src={selectedImage ?? formatImagePath(producto.imagen_producto)}
-									alt={producto.nombre_producto}
-									className="w-100 h-100 object-fit-cover rounded"
-								/>
+					<div className="card card-soft shadow-soft h-100 d-flex">
+						<div className="card-body p-3 d-flex flex-column gap-2 h-100">
+							<div className="flex-grow-1 d-flex align-items-center justify-content-center">
+								<div className="ratio ratio-4x3 w-100">
+									<img
+										src={selectedImage ?? formatImagePath(producto.imagen_producto)}
+										alt={producto.nombre_producto}
+										className="w-100 h-100 object-fit-cover rounded"
+									/>
+								</div>
 							</div>
 							{galleryImages.length > 1 ? (
 								<div className="menu-gallery__thumbs" role="list">
@@ -289,17 +329,17 @@ const MenuDetailsPage = () => {
 
 				<div className="col-lg-5">
 					<div className="card card-soft shadow-soft h-100">
-						<div className="card-body d-flex flex-column gap-3">
+						<div className="card-body d-flex flex-column gap-2">
 							<div>
-								<h1 className="h3 mb-1">{producto.nombre_producto}</h1>
+								<h1 className="h3 mb-2">{producto.nombre_producto}</h1>
 								<div className="small mb-2">
 									<span className="me-2">Código:</span>
 									<code>{producto.codigo_producto}</code>
 								</div>
 								<p className="h4 mb-3">{formatPrice(producto.precio_producto)}</p>
 							</div>
-							<p>{producto.descripción_producto}</p>
-							<hr />
+							<p className="mb-3">{producto.descripción_producto}</p>
+							<hr className="my-3" />
 							<div>
 								<label className="form-label" htmlFor="customMessage">
 									Mensaje personalizado (opcional)
@@ -313,19 +353,39 @@ const MenuDetailsPage = () => {
 									value={mensaje}
 									onChange={handleMessageChange}
 								/>
-								<div className="form-text text-end">
+								<div className="form-text text-end mt-1">
 									{mensaje.length}/{MAX_MESSAGE_LENGTH} caracteres
 								</div>
 							</div>
-							<Button type="button" size="lg" variant="mint" onClick={handleAddToCart}>
-								Añadir al carrito
-							</Button>
-							{feedback ? (
-								<div className="small" role="status" aria-live="polite">
+							<div className="mt-2">
+								<label className="form-label" htmlFor="productQuantity">
+									Cantidad
+								</label>
+								<input
+									type="number"
+									id="productQuantity"
+									className="form-control"
+									min={1}
+									max={maxQuantity}
+									value={quantity}
+									onChange={handleQuantityInputChange}
+									onBlur={handleQuantityBlur}
+								/>
+								<div className="form-text text-end">
+									Máximo {maxQuantity} {maxQuantity === 1 ? 'unidad disponible' : 'unidades disponibles'}
+								</div>
+							</div>
+							<div className="d-flex flex-column flex-sm-row gap-2">
+								<Button type="button" size="lg" variant="mint" onClick={handleAddToCart} block>
+									Añadir al carrito
+								</Button>
+							</div>
+						{feedback ? (
+							<div className="small mt-2" role="status" aria-live="polite">
 									{feedback}
 								</div>
 							) : null}
-							<hr />
+						<hr className="my-3" />
 							<ul className="list-unstyled small mb-0">
 								<li>
 									<i className="bi bi-check2-circle me-2" aria-hidden="true" />Decoración personalizable

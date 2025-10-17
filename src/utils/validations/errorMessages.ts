@@ -11,7 +11,11 @@ export const errorMessages = {
 	selectionRequired: (field: string) => `Selecciona una opción de ${field}`,
 	passwordMismatch: 'Las contraseñas no coinciden',
 	duplicateEmail: 'Este correo ya está registrado',
+	duplicateRun: 'Este RUN ya se encuentra registrado',
 	negativePrice: 'El precio no puede ser negativo',
 	priceOrder: 'El precio mínimo no puede superar al máximo',
 	userNotFound: 'No encontramos una cuenta asociada a este correo',
+	lettersOnly: (field: string) => `${field} solo puede contener letras, espacios y acentos`,
+	runLeadingZero: 'El RUN no puede comenzar con 0',
+	acceptTerms: 'Debes aceptar los términos y condiciones para continuar',
 } as const

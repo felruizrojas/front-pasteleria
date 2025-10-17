@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FocusEvent, FormEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/components/common'
-import { logoImage as defaultAvatar } from '@/assets'
+import { defaultProfileImage } from '@/assets'
 import useAuth from '@/hooks/useAuth'
-import { LOCAL_STORAGE_KEYS } from '@/utils/storage/initLocalData'
+import { LOCAL_STORAGE_KEYS, type RegionSeed } from '@/utils/storage/initLocalData'
 import { getLocalData, getLocalItem, setLocalItem } from '@/utils/storage/localStorageUtils'
 import {
 	mapFormToStoredUser,
+	sanitizeNameField,
 	saveUserRecord,
 	validateUserForm,
 } from '@/utils/validations/userValidations'
@@ -16,36 +17,60 @@ import type { UserFormValues } from '@/utils/validations/userValidations'
 import type { ValidationErrors } from '@/utils/validations/types'
 import type { StoredUser } from '@/types/user'
 
-const createInitialValues = (user?: StoredUser | null): UserFormValues => ({
-	id: user?.id ?? '',
-	run: user?.run ?? '',
-	nombre: user?.nombre ?? '',
-	apellidos: user?.apellidos ?? '',
-	correo: user?.correo ?? '',
-	fechaNacimiento: user?.fechaNacimiento ?? '',
-	regionId: user?.regionId ?? '',
-	comuna: user?.comuna ?? '',
-	direccion: user?.direccion ?? '',
-	password: '',
-	confirmPassword: '',
-})
+const splitRun = (value: string) => {
+	const sanitized = value.replace(/[^0-9kK]/g, '').toUpperCase()
+	if (!sanitized) {
+		return { body: '', digit: '' }
+	}
+	if (sanitized.length === 1) {
+		return { body: '', digit: sanitized }
+	}
+	return {
+		body: sanitized.slice(0, -1).slice(0, 8),
+		digit: sanitized.slice(-1),
+	}
+}
+
+const createInitialValues = (user?: StoredUser | null): UserFormValues => {
+	const { body, digit } = splitRun(user?.run ?? '')
+	return {
+		id: user?.id ?? '',
+		run: body && digit ? `${body}${digit}` : '',
+		runBody: body,
+		runDigit: digit,
+		nombre: user?.nombre ?? '',
+		apellidos: user?.apellidos ?? '',
+		correo: user?.correo ?? '',
+		fechaNacimiento: user?.fechaNacimiento ?? '',
+		regionId: user?.regionId ?? '',
+		comuna: user?.comuna ?? '',
+		direccion: user?.direccion ?? '',
+		password: '',
+		confirmPassword: '',
+		termsAccepted: true,
+		avatarUrl: user?.avatarUrl ?? defaultProfileImage,
+	}
+}
 
 const ProfilePage = () => {
-	const location = useLocation()
 	const navigate = useNavigate()
-	const currentPath = `${location.pathname}${location.search}`
-	const { login, logout, user } = useAuth()
-	const [avatarUrl, setAvatarUrl] = useState<string>(defaultAvatar)
-	const [regions, setRegions] = useState<Array<{ id: string; nombre: string; comunas: string[] }>>([])
+	const { login, logout } = useAuth()
+	const [avatarUrl, setAvatarUrl] = useState<string>(defaultProfileImage)
+	const [regions, setRegions] = useState<RegionSeed[]>([])
 	const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
 	const [values, setValues] = useState<UserFormValues>(createInitialValues())
 	const [errors, setErrors] = useState<ValidationErrors<UserFormValues>>({})
 	const [touched, setTouched] = useState<Partial<Record<keyof UserFormValues, boolean>>>({})
 	const [feedback, setFeedback] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
+	const isSuperAdmin = currentUser?.tipoUsuario === 'SuperAdmin'
 
 	const runValidation = useCallback(
-		(nextValues: UserFormValues, nextTouched: Partial<Record<keyof UserFormValues, boolean>>) => {
-			const validation = validateUserForm(nextValues, { mode: 'update' })
+		(
+			nextValues: UserFormValues,
+			nextTouched: Partial<Record<keyof UserFormValues, boolean>>,
+			validationOverride?: ReturnType<typeof validateUserForm>,
+		) => {
+			const validation = validationOverride ?? validateUserForm(nextValues, { mode: 'update' })
 			const filtered: ValidationErrors<UserFormValues> = {}
 			;(Object.keys(nextTouched) as Array<keyof UserFormValues>).forEach((key) => {
 				if (!nextTouched[key]) {
@@ -63,11 +88,9 @@ const ProfilePage = () => {
 	)
 
 	const roleShortcut = useMemo(() => {
-		if (!user) {
-			return null
-		}
+		const role = currentUser?.tipoUsuario
 
-		if (user.role === 'admin') {
+		if (role === 'Administrador' || role === 'SuperAdmin') {
 			return {
 				label: 'Ir a la vista de administrador',
 				to: '/admin',
@@ -75,7 +98,7 @@ const ProfilePage = () => {
 			}
 		}
 
-		if (user.role === 'seller') {
+		if (role === 'Vendedor') {
 			return {
 				label: 'Ir a la vista de vendedor',
 				to: '/seller',
@@ -84,10 +107,10 @@ const ProfilePage = () => {
 		}
 
 		return null
-	}, [user])
+	}, [currentUser?.tipoUsuario])
 
 	useEffect(() => {
-		const regionData = getLocalData<typeof regions[number]>(LOCAL_STORAGE_KEYS.regiones)
+		const regionData = getLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones)
 		setRegions(regionData)
 	}, [])
 
@@ -99,6 +122,7 @@ const ProfilePage = () => {
 		}
 
 		setCurrentUser(stored)
+		setAvatarUrl(stored.avatarUrl ?? defaultProfileImage)
 		setValues(createInitialValues(stored))
 		setErrors({})
 		setTouched({})
@@ -110,6 +134,9 @@ const ProfilePage = () => {
 	)
 
 	const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
+		if (isSuperAdmin) {
+			return
+		}
 		const file = event.currentTarget.files?.[0]
 		if (!file) {
 			return
@@ -119,19 +146,30 @@ const ProfilePage = () => {
 		reader.addEventListener('load', () => {
 			if (typeof reader.result === 'string') {
 				setAvatarUrl(reader.result)
+				setValues((prev) => ({ ...prev, avatarUrl: reader.result as string }))
+				setTouched((prev) => ({ ...prev, avatarUrl: true }))
 			}
 		})
 		reader.readAsDataURL(file)
 	}
 
 	const handleAvatarReset = () => {
-		setAvatarUrl(defaultAvatar)
+		if (isSuperAdmin) {
+			return
+		}
+		setAvatarUrl(defaultProfileImage)
+		setValues((prev) => ({ ...prev, avatarUrl: defaultProfileImage }))
+		setTouched((prev) => ({ ...prev, avatarUrl: true }))
 	}
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		if (isSuperAdmin) {
+			return
+		}
 		const { name, value } = event.currentTarget
 		const field = name as keyof UserFormValues
-		const nextValues = { ...values, [field]: value }
+		const sanitizedValue = name === 'nombre' || name === 'apellidos' ? sanitizeNameField(value) : value
+		const nextValues = { ...values, [field]: sanitizedValue }
 		const nextTouched = { ...touched, [field]: true }
 		runValidation(nextValues, nextTouched)
 		setValues(nextValues)
@@ -140,6 +178,9 @@ const ProfilePage = () => {
 	}
 
 	const handleInputBlur = (event: FocusEvent<HTMLInputElement>) => {
+		if (isSuperAdmin) {
+			return
+		}
 		const { name } = event.currentTarget
 		if (!name) {
 			return
@@ -151,6 +192,9 @@ const ProfilePage = () => {
 	}
 
 	const handleRegionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+		if (isSuperAdmin) {
+			return
+		}
 		const nextRegion = event.currentTarget.value
 		const nextValues = { ...values, regionId: nextRegion, comuna: '' }
 		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
@@ -165,6 +209,9 @@ const ProfilePage = () => {
 	}
 
 	const handleComunaChange = (event: ChangeEvent<HTMLSelectElement>) => {
+		if (isSuperAdmin) {
+			return
+		}
 		const nextComuna = event.currentTarget.value
 		const nextValues = { ...values, comuna: nextComuna }
 		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
@@ -177,10 +224,75 @@ const ProfilePage = () => {
 		setFeedback(null)
 	}
 
+	const handleRunBodyChange = (event: ChangeEvent<HTMLInputElement>) => {
+		if (isSuperAdmin) {
+			return
+		}
+		const digits = event.currentTarget.value.replace(/\D/g, '').slice(0, 8)
+		const combined = `${digits}${values.runDigit ?? ''}`
+		const nextValues = { ...values, runBody: digits, run: combined }
+		const validation = validateUserForm(nextValues, { mode: 'update' })
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
+		if (touched.runBody || validation.errors.runBody) {
+			nextTouched.runBody = true
+		}
+		if (touched.run || validation.errors.run) {
+			nextTouched.run = true
+		}
+		runValidation(nextValues, nextTouched, validation)
+		setValues(nextValues)
+		setTouched(nextTouched)
+		setFeedback(null)
+	}
+
+	const handleRunDigitChange = (event: ChangeEvent<HTMLInputElement>) => {
+		if (isSuperAdmin) {
+			return
+		}
+		const verifier = event.currentTarget.value.replace(/[^0-9kK]/g, '').toUpperCase().slice(0, 1)
+		const combined = `${values.runBody ?? ''}${verifier}`
+		const nextValues = { ...values, runDigit: verifier, run: combined }
+		const validation = validateUserForm(nextValues, { mode: 'update' })
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
+		if (touched.runDigit || validation.errors.runDigit) {
+			nextTouched.runDigit = true
+		}
+		if (validation.errors.runBody) {
+			nextTouched.runBody = true
+		}
+		if (touched.run || validation.errors.run) {
+			nextTouched.run = true
+		}
+		runValidation(nextValues, nextTouched, validation)
+		setValues(nextValues)
+		setTouched(nextTouched)
+		setFeedback(null)
+	}
+
+	const handleRunBlur = (field: 'runBody' | 'runDigit') => {
+		if (isSuperAdmin) {
+			return
+		}
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
+			...touched,
+			[field]: true,
+			run: true,
+		}
+		runValidation(values, nextTouched)
+		setTouched(nextTouched)
+	}
+
 	const handleSave = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		if (!currentUser) {
 			setFeedback({ type: 'danger', text: 'No es posible actualizar el perfil sin sesión activa.' })
+			return
+		}
+		if (currentUser.tipoUsuario === 'SuperAdmin') {
+			setFeedback({
+				type: 'danger',
+				text: 'La cuenta principal está protegida y no admite modificaciones.',
+			})
 			return
 		}
 
@@ -196,10 +308,14 @@ const ProfilePage = () => {
 			return
 		}
 
-		const record = mapFormToStoredUser({ ...values, password: values.password || currentUser.password }, currentUser)
+		const record = mapFormToStoredUser(
+			{ ...values, avatarUrl, password: values.password || currentUser.password },
+			currentUser,
+		)
 		saveUserRecord(record)
 		setLocalItem(LOCAL_STORAGE_KEYS.activeUser, record)
 		setCurrentUser(record)
+		setAvatarUrl(record.avatarUrl ?? defaultProfileImage)
 		setValues(createInitialValues(record))
 		setErrors({})
 		setTouched({})
@@ -219,29 +335,37 @@ const ProfilePage = () => {
 									<img
 										src={avatarUrl}
 										alt="Avatar del usuario"
-										className="rounded-circle mb-3"
+										className="rounded-circle mb-3 mx-auto d-block"
 										width={140}
 										height={140}
 										style={{ objectFit: 'cover' }}
 									/>
 
+									{isSuperAdmin ? (
+										<span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle mb-3">
+											Super administradora
+										</span>
+									) : null}
+
 									<div className="d-grid gap-2">
-										<label className="btn btn-pastel btn-mint mb-0">
+										<label
+											className={`btn btn-outline-secondary${isSuperAdmin ? ' disabled' : ''}`}
+											htmlFor={isSuperAdmin ? undefined : 'profileAvatarUpload'}
+											aria-disabled={isSuperAdmin}
+											style={isSuperAdmin ? { pointerEvents: 'none' } : undefined}
+										>
 											<i className="bi bi-image me-1" aria-hidden="true" /> Cambiar foto
-											<input type="file" accept="image/*" hidden onChange={handleAvatarChange} />
+											<input
+												id="profileAvatarUpload"
+												type="file"
+												accept="image/*"
+												hidden
+												onChange={handleAvatarChange}
+											/>
 										</label>
-										<Button type="button" variant="mint" onClick={handleAvatarReset}>
+										<Button type="button" variant="mint" onClick={handleAvatarReset} disabled={isSuperAdmin}>
 											<i className="bi bi-trash me-1" aria-hidden="true" /> Quitar foto
 										</Button>
-									</div>
-								</div>
-
-								<hr />
-
-								<div className="text-start small">
-									<div className="d-flex justify-content-between">
-										<span>Correo</span>
-										<span className="fw-semibold">{values.correo || user?.email || '—'}</span>
 									</div>
 								</div>
 
@@ -259,7 +383,7 @@ const ProfilePage = () => {
 										variant="strawberry"
 										onClick={() => {
 											logout()
-											navigate('/login', { replace: true, state: { from: currentPath } })
+											navigate('/', { replace: true })
 										}}
 									>
 										<i className="bi bi-box-arrow-right me-1" aria-hidden="true" /> Cerrar sesión
@@ -279,16 +403,55 @@ const ProfilePage = () => {
 											{feedback.text}
 										</div>
 									) : null}
+									{isSuperAdmin ? (
+										<div className="alert alert-warning" role="status">
+											Esta cuenta superadministradora está protegida. No es posible editar sus datos desde esta vista.
+										</div>
+									) : null}
 									<div className="col-12 col-md-6">
-										<Input
-											label="RUN"
-											name="run"
-											placeholder="19011022K"
-											value={values.run}
-											onChange={handleInputChange}
-											onBlur={handleInputBlur}
-											errorText={errors.run}
-										/>
+										<label className="form-label fw-semibold" htmlFor="profileRunBody">
+											RUN
+										</label>
+										<div className="d-flex align-items-center gap-2">
+											<input
+												type="text"
+												id="profileRunBody"
+												name="runBody"
+												className={`form-control${errors.runBody || errors.run ? ' is-invalid' : ''}`}
+												inputMode="numeric"
+												pattern="[0-9]*"
+												placeholder="19011022"
+												value={values.runBody}
+												onChange={handleRunBodyChange}
+												onBlur={() => handleRunBlur('runBody')}
+												maxLength={8}
+												style={{ flex: 1 }}
+												disabled={isSuperAdmin}
+											/>
+											<span className="fw-semibold" aria-hidden="true">
+												-
+											</span>
+											<input
+												type="text"
+												id="profileRunDigit"
+												name="runDigit"
+												className={`form-control${errors.runDigit || errors.run ? ' is-invalid' : ''}`}
+												inputMode="text"
+												pattern="[0-9Kk]"
+												placeholder="K"
+												value={values.runDigit}
+												onChange={handleRunDigitChange}
+												onBlur={() => handleRunBlur('runDigit')}
+												maxLength={1}
+												style={{ width: '4rem' }}
+												disabled={isSuperAdmin}
+											/>
+										</div>
+										{errors.runBody ? <div className="invalid-feedback d-block">{errors.runBody}</div> : null}
+										{errors.runDigit ? <div className="invalid-feedback d-block">{errors.runDigit}</div> : null}
+										{!errors.runBody && !errors.runDigit && errors.run ? (
+											<div className="invalid-feedback d-block">{errors.run}</div>
+										) : null}
 									</div>
 									<div className="col-12 col-md-6">
 										<label className="form-label" htmlFor="birthdate">
@@ -302,6 +465,7 @@ const ProfilePage = () => {
 											value={values.fechaNacimiento ?? ''}
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
+											disabled={isSuperAdmin}
 										/>
 										{errors.fechaNacimiento ? (
 											<div className="invalid-feedback d-block">{errors.fechaNacimiento}</div>
@@ -316,6 +480,7 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.nombre}
+											disabled={isSuperAdmin}
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -327,6 +492,7 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.apellidos}
+											disabled={isSuperAdmin}
 										/>
 									</div>
 									<div className="col-12">
@@ -340,6 +506,7 @@ const ProfilePage = () => {
 											onBlur={handleInputBlur}
 											helperText="El rol se asigna automáticamente según el dominio."
 											errorText={errors.correo}
+											disabled={isSuperAdmin}
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -351,11 +518,12 @@ const ProfilePage = () => {
 											className={`form-select${errors.regionId ? ' is-invalid' : ''}`}
 											value={values.regionId}
 											onChange={handleRegionChange}
+											disabled={isSuperAdmin}
 										>
 											<option value="">Selecciona una región</option>
 											{regions.map((region) => (
 												<option key={region.id} value={region.id}>
-													{region.nombre}
+													{region.region}
 												</option>
 											))}
 										</select>
@@ -370,7 +538,7 @@ const ProfilePage = () => {
 										<select
 											id="comuna"
 											className={`form-select${errors.comuna ? ' is-invalid' : ''}`}
-											disabled={!values.regionId}
+											disabled={isSuperAdmin || !values.regionId}
 											value={values.comuna}
 											onChange={handleComunaChange}
 										>
@@ -394,6 +562,7 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.direccion}
+											disabled={isSuperAdmin}
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -407,6 +576,7 @@ const ProfilePage = () => {
 											onBlur={handleInputBlur}
 											helperText="Déjalo en blanco para mantener tu contraseña actual."
 											errorText={errors.password}
+											disabled={isSuperAdmin}
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -419,11 +589,12 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.confirmPassword}
+											disabled={isSuperAdmin}
 										/>
 									</div>
 
 									<div className="d-flex flex-wrap gap-2 mt-4">
-										<Button type="submit" variant="strawberry">
+										<Button type="submit" variant="strawberry" disabled={isSuperAdmin}>
 											<i className="bi bi-save2 me-1" aria-hidden="true" /> Guardar cambios
 										</Button>
 									</div>

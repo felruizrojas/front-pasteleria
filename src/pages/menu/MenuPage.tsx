@@ -58,6 +58,20 @@ const parsePrice = (value: string) => {
 	return Number.isNaN(numericValue) ? null : numericValue
 }
 
+const sanitizePriceInput = (value: string): string => {
+	const digits = value.replace(/[^0-9]/g, '')
+	if (!digits) {
+		return ''
+	}
+
+	const numeric = Number(digits)
+	if (Number.isNaN(numeric)) {
+		return ''
+	}
+
+	return numeric.toString()
+}
+
 const MenuPage = () => {
 	const [selectedCategory, setSelectedCategory] = useState<'all' | number>('all')
 	const [selectedProductCode, setSelectedProductCode] = useState<'all' | Producto['codigo_producto']>('all')
@@ -148,14 +162,33 @@ const MenuPage = () => {
 	}
 
 	const handleMinPriceChange = (value: string) => {
-		setMinPrice(value)
-		const validation = validatePriceFilters({ precioMin: value, precioMax: maxPrice })
+		const sanitized = sanitizePriceInput(value)
+		let nextMax = maxPrice
+		const minNumeric = sanitized ? Number(sanitized) : null
+		const maxNumeric = maxPrice ? Number(maxPrice) : null
+
+		if (minNumeric !== null && maxNumeric !== null && minNumeric > maxNumeric) {
+			nextMax = sanitized
+			setMaxPrice(nextMax)
+		}
+
+		setMinPrice(sanitized)
+		const validation = validatePriceFilters({ precioMin: sanitized, precioMax: nextMax })
 		setFilterErrors(validation.errors)
 	}
 
 	const handleMaxPriceChange = (value: string) => {
-		setMaxPrice(value)
-		const validation = validatePriceFilters({ precioMin: minPrice, precioMax: value })
+		const sanitized = sanitizePriceInput(value)
+		let nextMax = sanitized
+		const minNumeric = minPrice ? Number(minPrice) : null
+		const maxNumeric = sanitized ? Number(sanitized) : null
+
+		if (minNumeric !== null && maxNumeric !== null && maxNumeric < minNumeric) {
+			nextMax = minPrice
+		}
+
+		setMaxPrice(nextMax)
+		const validation = validatePriceFilters({ precioMin: minPrice, precioMax: nextMax })
 		setFilterErrors(validation.errors)
 	}
 

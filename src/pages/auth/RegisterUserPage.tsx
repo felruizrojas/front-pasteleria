@@ -4,11 +4,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/components/common'
 import { logoImage } from '@/assets'
-import { LOCAL_STORAGE_KEYS } from '@/utils/storage/initLocalData'
+import heroImage from '@/assets/images/carrusel/diversidad_pasteles.jpg'
+import { LOCAL_STORAGE_KEYS, type RegionSeed } from '@/utils/storage/initLocalData'
 import { getLocalData, setLocalItem } from '@/utils/storage/localStorageUtils'
 import {
 	MIN_AGE,
 	mapFormToStoredUser,
+	sanitizeNameField,
 	saveUserRecord,
 	validateUserForm,
 } from '@/utils/validations/userValidations'
@@ -21,9 +23,11 @@ const RegisterUserPage = () => {
 	const currentPath = location.pathname
 	const navigate = useNavigate()
 	const { login } = useAuth()
-	const [regions, setRegions] = useState<Array<{ id: string; nombre: string; comunas: string[] }>>([])
+	const [regions, setRegions] = useState<RegionSeed[]>([])
 	const [values, setValues] = useState<UserFormValues>({
 		run: '',
+		runBody: '',
+		runDigit: '',
 		nombre: '',
 		apellidos: '',
 		correo: '',
@@ -33,6 +37,7 @@ const RegisterUserPage = () => {
 		direccion: '',
 		password: '',
 		confirmPassword: '',
+		termsAccepted: false,
 	})
 	const [errors, setErrors] = useState<ValidationErrors<UserFormValues>>({})
 	const [touched, setTouched] = useState<Partial<Record<keyof UserFormValues, boolean>>>({})
@@ -59,13 +64,17 @@ const RegisterUserPage = () => {
 	}, [])
 
 	useEffect(() => {
-		const regionData = getLocalData<typeof regions[number]>(LOCAL_STORAGE_KEYS.regiones)
+		const regionData = getLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones)
 		setRegions(regionData)
 	}, [])
 
 	const runValidation = useCallback(
-		(nextValues: UserFormValues, nextTouched: Partial<Record<keyof UserFormValues, boolean>>) => {
-			const validation = validateUserForm(nextValues, { mode: 'create' })
+		(
+			nextValues: UserFormValues,
+			nextTouched: Partial<Record<keyof UserFormValues, boolean>>,
+			validationOverride?: ReturnType<typeof validateUserForm>,
+		) => {
+			const validation = validationOverride ?? validateUserForm(nextValues, { mode: 'create' })
 			const filtered: ValidationErrors<UserFormValues> = {}
 			;(Object.keys(nextTouched) as Array<keyof UserFormValues>).forEach((key) => {
 				if (!nextTouched[key]) {
@@ -90,12 +99,77 @@ const RegisterUserPage = () => {
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.currentTarget
 		const field = name as keyof UserFormValues
-		const nextValues = { ...values, [field]: value }
-		const nextTouched = { ...touched, [field]: true }
-		runValidation(nextValues, nextTouched)
+		const sanitizedValue = name === 'nombre' || name === 'apellidos' ? sanitizeNameField(value) : value
+		const nextValues = { ...values, [field]: sanitizedValue }
+		const validation = validateUserForm(nextValues, { mode: 'create' })
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
+		if (touched[field] || validation.errors[field]) {
+			nextTouched[field] = true
+		}
+		runValidation(nextValues, nextTouched, validation)
 		setValues(nextValues)
 		setTouched(nextTouched)
 		setFormMessage(null)
+	}
+
+		const handleTermsChange = (event: ChangeEvent<HTMLInputElement>) => {
+			const checked = event.currentTarget.checked
+			const nextValues = { ...values, termsAccepted: checked }
+			const validation = validateUserForm(nextValues, { mode: 'create' })
+			const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched, termsAccepted: true }
+			runValidation(nextValues, nextTouched, validation)
+			setValues(nextValues)
+			setTouched(nextTouched)
+			setFormMessage(null)
+		}
+
+	const handleRunBodyChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const digits = event.currentTarget.value.replace(/\D/g, '').slice(0, 8)
+		const combined = `${digits}${values.runDigit ?? ''}`
+		const nextValues = { ...values, runBody: digits, run: combined }
+		const validation = validateUserForm(nextValues, { mode: 'create' })
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
+		if (touched.runBody || validation.errors.runBody) {
+			nextTouched.runBody = true
+		}
+		if (touched.run || validation.errors.run) {
+			nextTouched.run = true
+		}
+		runValidation(nextValues, nextTouched, validation)
+		setValues(nextValues)
+		setTouched(nextTouched)
+		setFormMessage(null)
+	}
+
+	const handleRunDigitChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const verifier = event.currentTarget.value.replace(/[^0-9kK]/g, '').toUpperCase().slice(0, 1)
+		const combined = `${values.runBody ?? ''}${verifier}`
+		const nextValues = { ...values, runDigit: verifier, run: combined }
+		const validation = validateUserForm(nextValues, { mode: 'create' })
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
+		if (touched.runDigit || validation.errors.runDigit) {
+			nextTouched.runDigit = true
+		}
+		if (validation.errors.runBody) {
+			nextTouched.runBody = true
+		}
+		if (touched.run || validation.errors.run) {
+			nextTouched.run = true
+		}
+		runValidation(nextValues, nextTouched, validation)
+		setValues(nextValues)
+		setTouched(nextTouched)
+		setFormMessage(null)
+	}
+
+	const handleRunBlur = (field: 'runBody' | 'runDigit') => {
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
+			...touched,
+			[field]: true,
+			run: true,
+		}
+		runValidation(values, nextTouched)
+		setTouched(nextTouched)
 	}
 
 	const handleInputBlur = (event: FocusEvent<HTMLInputElement>) => {
@@ -164,17 +238,41 @@ const RegisterUserPage = () => {
 
 	return (
 		<main className="mt-0">
-			<section className="position-relative overflow-hidden">
-				<div className="container py-5">
+			<section
+				className="position-relative overflow-hidden text-white"
+				style={{
+					backgroundImage: `linear-gradient(135deg, rgba(39, 12, 63, 0.75), rgba(233, 30, 99, 0.55)), url(${heroImage})`,
+					backgroundSize: 'cover',
+					backgroundPosition: 'center',
+					backgroundRepeat: 'no-repeat',
+				}}
+			>
+				<div className="container py-3 position-relative">
 					<div className="row justify-content-center">
-						<div className="col-12 col-lg-10">
-							<div className="d-flex flex-column flex-lg-row align-items-center gap-4 text-center text-lg-start">
-								<img src={logoImage} alt="Pastelería Mil Sabores" width={140} className="rounded-pill shadow" />
+						<div className="col-11 col-md-10 col-lg-6">
+							<div
+								className="d-flex flex-column flex-lg-row align-items-center gap-3 text-center text-lg-start p-3 p-lg-4 rounded-4 shadow-lg"
+								style={{
+									background: 'rgba(31, 8, 56, 0.5)',
+									backdropFilter: 'blur(18px)',
+									border: '1px solid rgba(255, 255, 255, 0.2)',
+								}}
+							>
+								<img
+									src={logoImage}
+									alt="Pastelería Mil Sabores"
+									width={140}
+									className="rounded-pill shadow border border-light border-opacity-50"
+								/>
 								<div>
-									<span className="badge text-uppercase fw-semibold mb-2">Tu pastelería favorita</span>
-									<h1 className="mb-2 brand-name">Pastelería Mil Sabores</h1>
-									<h2 className="h4 mb-2">Crea tu cuenta</h2>
-									<p className="lead mb-0">
+									<span className="badge text-uppercase fw-semibold mb-3 bg-white text-body-secondary px-3 py-2">
+										Tu pastelería favorita
+									</span>
+									<h1 className="mb-2 brand-name text-white">Pastelería Mil Sabores</h1>
+									<h2 className="h4 mb-3" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+										Crea tu cuenta
+									</h2>
+									<p className="lead mb-0" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
 										Accede a beneficios dulces, seguimiento de pedidos y novedades exclusivas.
 									</p>
 								</div>
@@ -216,16 +314,55 @@ const RegisterUserPage = () => {
 										</div>
 									) : null}
 
-									<Input
-										name="run"
-										label="RUN"
-										placeholder="19011022K"
-										value={values.run}
-										onChange={handleInputChange}
-										onBlur={handleInputBlur}
-										helperText="Ingresa tu RUN sin puntos ni guion."
-										errorText={errors.run}
-									/>
+									<div className="mb-3">
+										<label className="form-label fw-semibold" htmlFor="runBody">
+											RUN
+										</label>
+										<div className="d-flex align-items-center gap-2">
+											<input
+												type="text"
+												id="runBody"
+												name="runBody"
+												className={`form-control${errors.runBody || errors.run ? ' is-invalid' : ''}`}
+												inputMode="numeric"
+												pattern="[0-9]*"
+												placeholder="19011022"
+												value={values.runBody}
+												onChange={handleRunBodyChange}
+												onBlur={() => handleRunBlur('runBody')}
+												aria-describedby="runHelp"
+												autoComplete="off"
+												maxLength={8}
+												style={{ flex: 1 }}
+											/>
+											<span className="fw-semibold" aria-hidden="true">
+												-
+											</span>
+											<input
+												type="text"
+												id="runDigit"
+												name="runDigit"
+												className={`form-control${errors.runDigit || errors.run ? ' is-invalid' : ''}`}
+												inputMode="text"
+												pattern="[0-9Kk]"
+												placeholder="K"
+												value={values.runDigit}
+												onChange={handleRunDigitChange}
+												onBlur={() => handleRunBlur('runDigit')}
+												maxLength={1}
+												style={{ width: '4rem' }}
+												autoComplete="off"
+											/>
+										</div>
+										<div id="runHelp" className="form-text">
+											Ingresa los 7 u 8 dígitos y luego el dígito verificador.
+										</div>
+										{errors.runBody ? <div className="invalid-feedback d-block">{errors.runBody}</div> : null}
+										{errors.runDigit ? <div className="invalid-feedback d-block">{errors.runDigit}</div> : null}
+										{!errors.runBody && !errors.runDigit && errors.run ? (
+											<div className="invalid-feedback d-block">{errors.run}</div>
+										) : null}
+									</div>
 									<Input
 										name="nombre"
 										label="Nombre"
@@ -303,7 +440,7 @@ const RegisterUserPage = () => {
 												<option value="">Selecciona una región</option>
 												{regions.map((region) => (
 													<option key={region.id} value={region.id}>
-														{region.nombre}
+														{region.region}
 													</option>
 												))}
 											</select>
@@ -396,10 +533,29 @@ const RegisterUserPage = () => {
 									</div>
 
 									<div className="form-check mb-4">
-										<input type="checkbox" className="form-check-input" id="terms" name="terms" required />
+										<input
+											type="checkbox"
+											className={`form-check-input${errors.termsAccepted ? ' is-invalid' : ''}`}
+											id="terms"
+											name="termsAccepted"
+											checked={Boolean(values.termsAccepted)}
+											onChange={handleTermsChange}
+											onBlur={() => {
+												const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
+													...touched,
+													termsAccepted: true,
+												}
+												runValidation(values, nextTouched)
+												setTouched(nextTouched)
+											}}
+											required
+										/>
 										<label className="form-check-label" htmlFor="terms">
 											Acepto los <a className="link-body-emphasis" href="/terminos">términos y condiciones</a>
 										</label>
+										{errors.termsAccepted ? (
+											<div className="invalid-feedback d-block">{errors.termsAccepted}</div>
+										) : null}
 									</div>
 
 									<div className="d-grid">

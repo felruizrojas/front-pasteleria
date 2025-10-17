@@ -1,4 +1,4 @@
-export type UserRoleName = 'Administrador' | 'Vendedor' | 'Cliente'
+export type UserRoleName = 'SuperAdmin' | 'Administrador' | 'Vendedor' | 'Cliente'
 
 export type StoredUser = {
 	id: string
@@ -13,6 +13,7 @@ export type StoredUser = {
 	comuna: string
 	direccion: string
 	password: string
+	avatarUrl?: string
 	createdAt?: string
 	updatedAt?: string
 }

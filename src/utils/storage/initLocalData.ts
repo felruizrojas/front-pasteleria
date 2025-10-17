@@ -1,5 +1,8 @@
+import { defaultProfileImage } from '@/assets'
 import usuariosSeed from '@/data/usuarios.json'
-import regionesSeed from '@/data/regiones.json'
+import { REGIONES_COMUNAS } from '@/data/region_comuna'
+
+import type { StoredUser, UserRoleName } from '@/types/user'
 
 import { getLocalData, setLocalData } from './localStorageUtils'
 
@@ -14,15 +17,16 @@ export const LOCAL_STORAGE_KEYS = {
 	menuFilters: 'menuFilters',
 } as const
 
-type RegionSeed = {
+export type RegionSeed = {
 	id: string
-	nombre: string
+	region: string
 	comunas: string[]
 }
 
 type UsuarioSeed = {
 	id: string
-	run: string
+	run: number
+	dv: string
 	nombre: string
 	apellidos: string
 	correo: string
@@ -33,6 +37,7 @@ type UsuarioSeed = {
 	comuna: string
 	direccion: string
 	password: string
+	avatarUrl?: string
 }
 
 type ComunaSeed = {
@@ -49,33 +54,57 @@ const buildComunasSeed = (regions: RegionSeed[]): ComunaSeed[] =>
 		region.comunas.map((nombre) => ({
 			id: `${region.id}-${nombre}`,
 			regionId: region.id,
-			regionNombre: region.nombre,
+			regionNombre: region.region,
 			nombre,
 		})),
 	)
 
-export const initLocalData = () => {
-	if (!isBrowser || initialized) {
+const normalizedSeedRegions: RegionSeed[] = REGIONES_COMUNAS.map((entry) => ({
+	id: entry.id,
+	region: entry.region.trim(),
+	comunas: entry.comunas.map((comuna) => comuna.trim()).filter((comuna) => comuna.length > 0),
+})).filter((region) => region.region.length > 0)
+
+export const initLocalData = (force = false) => {
+	if (!isBrowser || (initialized && !force)) {
 		return
 	}
 
 	initialized = true
 
 	try {
-		const usuarios = getLocalData<UsuarioSeed>(LOCAL_STORAGE_KEYS.usuarios)
+		const usuarios = getLocalData<StoredUser>(LOCAL_STORAGE_KEYS.usuarios)
 		if (!usuarios.length) {
-			setLocalData<UsuarioSeed>(LOCAL_STORAGE_KEYS.usuarios, usuariosSeed as UsuarioSeed[])
+			const normalized = (usuariosSeed as UsuarioSeed[]).map(({ dv, run, tipoUsuario, avatarUrl, ...rest }) => {
+				const combinedRun = `${run}${dv}`.toUpperCase()
+				return {
+					...rest,
+					tipoUsuario: tipoUsuario as UserRoleName,
+					run: combinedRun,
+					avatarUrl: avatarUrl ?? defaultProfileImage,
+				}
+			})
+			setLocalData<StoredUser>(LOCAL_STORAGE_KEYS.usuarios, normalized)
 		}
 
-		const regiones = getLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones)
-		if (!regiones.length) {
-			setLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones, regionesSeed as RegionSeed[])
+		const storedRegions = getLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones)
+		const shouldResetRegions =
+			force ||
+			storedRegions.length !== normalizedSeedRegions.length ||
+			storedRegions.some((region) => {
+				const seed = normalizedSeedRegions.find((entry) => entry.id === region.id)
+				return !seed || seed.comunas.length !== region.comunas.length || region.comunas.length === 0
+			})
+
+		const effectiveRegions = shouldResetRegions ? normalizedSeedRegions : storedRegions
+
+		if (shouldResetRegions) {
+			setLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones, normalizedSeedRegions)
 		}
 
-		const comunas = getLocalData<ComunaSeed>(LOCAL_STORAGE_KEYS.comunas)
-		if (!comunas.length) {
-			const source = regiones.length ? regiones : (regionesSeed as RegionSeed[])
-			setLocalData<ComunaSeed>(LOCAL_STORAGE_KEYS.comunas, buildComunasSeed(source))
+		const storedComunas = getLocalData<ComunaSeed>(LOCAL_STORAGE_KEYS.comunas)
+		if (force || shouldResetRegions || !storedComunas.length) {
+			setLocalData<ComunaSeed>(LOCAL_STORAGE_KEYS.comunas, buildComunasSeed(effectiveRegions))
 		}
 	} catch (error) {
 		console.error('No fue posible inicializar los datos locales', error)

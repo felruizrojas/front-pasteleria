@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/common'
-import type { Producto } from '@/data/menu_datos'
 import { catalogoDatos } from '@/data/menu_datos'
 
 interface CarouselItem {
@@ -82,21 +81,22 @@ const formatImagePath = (relativePath: string) => {
 	return new URL(`@/assets/${normalized}`, import.meta.url).href
 }
 
-const formatPrice = (value: number) =>
-	value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })
-
-type FeaturedProduct = Producto & { categoriaNombre: string }
+const fallbackCategoryImage = new URL('@/assets/images/generica.png', import.meta.url).href
 
 const HomePage = () => {
-	const featuredProducts = useMemo<FeaturedProduct[]>(() => {
-		const items: FeaturedProduct[] = []
-		catalogoDatos.categorias.forEach((categoria) => {
-			categoria.productos.forEach((producto) => {
-				items.push({ ...producto, categoriaNombre: categoria.nombre_categoria })
-			})
-		})
-		return items.slice(0, 6)
-	}, [])
+	const featuredCategories = useMemo(
+		() =>
+			catalogoDatos.categorias.map((categoria) => {
+				const imagePath = categoria.productos[0]?.imagen_producto
+				return {
+					id: categoria.id_categoria,
+					name: categoria.nombre_categoria,
+					productCount: categoria.productos.length,
+					image: imagePath ? formatImagePath(imagePath) : fallbackCategoryImage,
+				}
+			}),
+		[],
+	)
 
 	return (
 		<>
@@ -181,26 +181,31 @@ const HomePage = () => {
 			<section className="py-5">
 				<div className="container">
 					<h2 className="mb-4 text-center section-title">Nuestra carta</h2>
-					{featuredProducts.length === 0 ? (
+					{featuredCategories.length === 0 ? (
 						<p className="text-center mb-0">Pronto compartiremos nuestra selección de productos.</p>
 					) : (
 						<>
 							<div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-								{featuredProducts.map((producto) => (
-									<div className="col" key={producto.codigo_producto}>
+								{featuredCategories.map((categoria) => (
+									<div className="col" key={categoria.id}>
 										<div className="card card-soft shadow-soft h-100 product-card">
-											<Link to={`/menu/${producto.codigo_producto}`} className="ratio ratio-4x3">
+											<Link to="/menu" className="ratio ratio-4x3">
 												<img
-													src={formatImagePath(producto.imagen_producto)}
-													alt={producto.nombre_producto}
+													src={categoria.image}
+													alt={`Categoría ${categoria.name}`}
 													className="w-100 h-100 object-fit-cover"
 													loading="lazy"
 												/>
 											</Link>
 											<div className="card-body text-center d-flex flex-column gap-2">
-												<p className="mb-1 text-uppercase small">{producto.categoriaNombre}</p>
-												<h3 className="h6 mb-0">{producto.nombre_producto}</h3>
-												<p className="mb-0 fw-semibold">{formatPrice(producto.precio_producto)}</p>
+												<h3 className="h5 mb-1">{categoria.name}</h3>
+												<p className="mb-0 text-muted small">
+													{categoria.productCount}{' '}
+													{categoria.productCount === 1 ? 'producto disponible' : 'productos disponibles'}
+												</p>
+												<Button as="link" to="/menu" variant="strawberry" size="sm" className="mt-2">
+													Explorar
+												</Button>
 											</div>
 										</div>
 									</div>

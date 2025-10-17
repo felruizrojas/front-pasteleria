@@ -1,22 +1,19 @@
+import { defaultProfileImage } from '@/assets'
 import type { StoredUser, UserRoleName } from '@/types/user'
-import { LOCAL_STORAGE_KEYS } from '@/utils/storage/initLocalData'
+import { LOCAL_STORAGE_KEYS, type RegionSeed } from '@/utils/storage/initLocalData'
 import { getLocalData, setLocalData } from '@/utils/storage/localStorageUtils'
 
 import { ALLOWED_EMAIL_DOMAINS } from './authValidations'
 import { errorMessages } from './errorMessages'
 import type { ValidationResult } from './types'
 
-type RegionSeed = {
-	id: string
-	nombre: string
-	comunas: string[]
-}
-
 export const MIN_AGE = 18
 
 export type UserFormValues = {
 	id?: string
 	run: string
+	runBody: string
+	runDigit: string
 	nombre: string
 	apellidos: string
 	correo: string
@@ -26,6 +23,8 @@ export type UserFormValues = {
 	direccion: string
 	password: string
 	confirmPassword?: string
+	termsAccepted?: boolean
+	avatarUrl?: string
 }
 
 export type ResetPasswordFormValues = {
@@ -39,6 +38,12 @@ type UserValidationOptions = {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const NAME_REGEX = /^[\p{L}\s´¨]+$/u
+const NAME_SANITIZE_REGEX = /[^\p{L}\s´¨]/gu
+export const sanitizeNameField = (value: string): string => value.replace(NAME_SANITIZE_REGEX, '')
+
+const RUN_BODY_REGEX = /^[0-9]{7,8}$/
+const RUN_DIGIT_REGEX = /^[0-9K]$/i
 
 const sanitizeRun = (value: string) => value.replace(/[^0-9kK]/g, '').toUpperCase()
 
@@ -92,17 +97,6 @@ export const validateAge = (value: string | undefined, minAge = MIN_AGE): boolea
 	return age >= minAge
 }
 
-export const determineUserType = (email: string): UserRoleName => {
-	const domain = email.trim().toLowerCase().split('@')[1] ?? ''
-	if (domain === 'profesor.duoc.cl') {
-		return 'Vendedor'
-	}
-	if (domain === 'duoc.cl') {
-		return 'Administrador'
-	}
-	return 'Cliente'
-}
-
 const getRegionById = (id: string): RegionSeed | undefined => {
 	const regions = getLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones)
 	return regions.find((region) => region.id === id)
@@ -114,13 +108,21 @@ const emailExists = (email: string, excludeId?: string): boolean => {
 	return users.some((user) => user.correo.toLowerCase() === normalized && user.id !== excludeId)
 }
 
+const runExists = (run: string, excludeId?: string): boolean => {
+	const users = getLocalData<StoredUser>(LOCAL_STORAGE_KEYS.usuarios)
+	const normalized = sanitizeRun(run)
+	return users.some((user) => sanitizeRun(user.run) === normalized && user.id !== excludeId)
+}
+
 export const validateUserForm = (
 	values: UserFormValues,
 	options: UserValidationOptions,
 ): ValidationResult<UserFormValues> => {
 	const errors: ValidationResult<UserFormValues>['errors'] = {}
 
-	const run = values.run?.trim() ?? ''
+	const runBody = values.runBody?.trim() ?? ''
+	const runDigit = values.runDigit?.trim().toUpperCase() ?? ''
+	const run = runBody && runDigit ? `${runBody}${runDigit}` : ''
 	const nombre = values.nombre?.trim() ?? ''
 	const apellidos = values.apellidos?.trim() ?? ''
 	const correo = values.correo?.trim() ?? ''
@@ -129,21 +131,44 @@ export const validateUserForm = (
 	const comuna = values.comuna?.trim() ?? ''
 	const password = values.password?.trim() ?? ''
 	const confirmPassword = values.confirmPassword?.trim() ?? ''
+	const termsAccepted = Boolean(values.termsAccepted)
 
-	if (!run) {
-		errors.run = errorMessages.required('El RUN')
-	} else if (!isValidRun(run)) {
-		errors.run = errorMessages.runFormat
+	if (!runBody) {
+		errors.runBody = 'Ingresa los 7 u 8 dígitos del RUN'
+	} else if (!RUN_BODY_REGEX.test(runBody)) {
+		errors.runBody = 'El RUN debe contener 7 u 8 dígitos numéricos'
+	} else if (runBody.startsWith('0')) {
+		errors.runBody = errorMessages.runLeadingZero
+	}
+
+	if (!runDigit) {
+		errors.runDigit = 'Ingresa el dígito verificador'
+	} else if (!RUN_DIGIT_REGEX.test(runDigit)) {
+		errors.runDigit = 'El dígito verificador debe ser un número o K'
+	}
+
+	if (!errors.runBody && !errors.runDigit) {
+		if (!run) {
+			errors.run = errorMessages.required('El RUN completo')
+		} else if (!isValidRun(run)) {
+			errors.run = errorMessages.runFormat
+		} else if (runExists(run, values.id)) {
+			errors.run = errorMessages.duplicateRun
+		}
 	}
 
 	if (!nombre) {
 		errors.nombre = errorMessages.required('El nombre')
+	} else if (!NAME_REGEX.test(nombre)) {
+		errors.nombre = errorMessages.lettersOnly('El nombre')
 	} else if (nombre.length > 50) {
 		errors.nombre = errorMessages.maxLength('El nombre', 50)
 	}
 
 	if (!apellidos) {
 		errors.apellidos = errorMessages.required('Los apellidos')
+	} else if (!NAME_REGEX.test(apellidos)) {
+		errors.apellidos = errorMessages.lettersOnly('Los apellidos')
 	} else if (apellidos.length > 100) {
 		errors.apellidos = errorMessages.maxLength('Los apellidos', 100)
 	}
@@ -197,6 +222,10 @@ export const validateUserForm = (
 			errors.confirmPassword = errorMessages.required('La confirmación de contraseña')
 		} else if (password && password !== confirmPassword) {
 			errors.confirmPassword = errorMessages.passwordMismatch
+		}
+
+		if (!termsAccepted) {
+			errors.termsAccepted = errorMessages.acceptTerms
 		}
 	} else {
 		if (password) {
@@ -270,20 +299,23 @@ export const mapFormToStoredUser = (values: UserFormValues, current?: StoredUser
 	const timestamp = new Date().toISOString()
 	const sanitizedPassword = values.password.trim() || current?.password || ''
 	const identifier = values.id ?? current?.id ?? generateUserId()
+	const avatar = values.avatarUrl?.trim() || current?.avatarUrl || defaultProfileImage
+	const role: UserRoleName = current?.tipoUsuario ?? 'Cliente'
 
 	return {
 		id: identifier,
-		run: sanitizeRun(values.run),
+		run: sanitizeRun(`${values.runBody}${values.runDigit}`),
 		nombre: values.nombre.trim(),
 		apellidos: values.apellidos.trim(),
 		correo: values.correo.trim().toLowerCase(),
 		fechaNacimiento: values.fechaNacimiento || current?.fechaNacimiento || undefined,
-		tipoUsuario: determineUserType(values.correo),
+		tipoUsuario: role,
 		regionId: values.regionId,
-		regionNombre: region?.nombre ?? values.regionId,
+		regionNombre: region?.region ?? values.regionId,
 		comuna: values.comuna.trim(),
 		direccion: values.direccion.trim(),
 		password: sanitizedPassword,
+		avatarUrl: avatar,
 		createdAt: current?.createdAt ?? timestamp,
 		updatedAt: timestamp,
 	}
@@ -295,8 +327,20 @@ export const saveUserRecord = (record: StoredUser): StoredUser[] => {
 
 	if (index === -1) {
 		users.push(record)
-	} else {
-		users[index] = { ...users[index], ...record, createdAt: users[index].createdAt ?? record.createdAt }
+		setLocalData(LOCAL_STORAGE_KEYS.usuarios, users)
+		return users
+	}
+
+	const existing = users[index]
+	if (existing.tipoUsuario === 'SuperAdmin') {
+		return users
+	}
+
+	users[index] = {
+		...existing,
+		...record,
+		createdAt: existing.createdAt ?? record.createdAt,
+		tipoUsuario: existing.tipoUsuario,
 	}
 
 	setLocalData(LOCAL_STORAGE_KEYS.usuarios, users)

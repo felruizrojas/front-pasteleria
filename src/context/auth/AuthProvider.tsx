@@ -14,6 +14,8 @@ const ACTIVE_USER_KEY = LOCAL_STORAGE_KEYS.activeUser
 
 const mapStoredRole = (role: StoredUser['tipoUsuario']): UserRole => {
 	switch (role) {
+		case 'SuperAdmin':
+			return 'superadmin'
 		case 'Administrador':
 			return 'admin'
 		case 'Vendedor':

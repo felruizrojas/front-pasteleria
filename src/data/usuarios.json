@@ -1,12 +1,13 @@
 [
   {
     "id": "1",
-    "run": "111111111",
+    "run": 11111111,
+    "dv": "1",
     "nombre": "Ana María",
     "apellidos": "Pérez Soto",
     "correo": "ana@duoc.cl",
     "fechaNacimiento": "1990-05-12",
-    "tipoUsuario": "Administrador",
+    "tipoUsuario": "SuperAdmin",
     "regionId": "13",
     "regionNombre": "Metropolitana",
     "comuna": "Santiago",
@@ -15,7 +16,8 @@
   },
   {
     "id": "2",
-    "run": "123456785",
+    "run": 12345678,
+    "dv": "5",
     "nombre": "Luis Felipe",
     "apellidos": "González Fuentes",
     "correo": "luis@gmail.com",
@@ -29,7 +31,8 @@
   },
   {
     "id": "3",
-    "run": "145678323",
+    "run": 14567832,
+    "dv": "3",
     "nombre": "Marcela Andrea",
     "apellidos": "Rojas Díaz",
     "correo": "marcela@profesor.duoc.cl",
@@ -43,7 +46,8 @@
   },
   {
     "id": "4",
-    "run": "156789321",
+    "run": 15678932,
+    "dv": "1",
     "nombre": "José Ignacio",
     "apellidos": "Ramírez Torres",
     "correo": "jose.ramirez@gmail.com",
@@ -57,7 +61,8 @@
   },
   {
     "id": "5",
-    "run": "167890326",
+    "run": 16789032,
+    "dv": "6",
     "nombre": "Claudia Isabel",
     "apellidos": "Fernández Mella",
     "correo": "claudia.fernandez@duoc.cl",
@@ -71,7 +76,8 @@
   },
   {
     "id": "6",
-    "run": "17890132K",
+    "run": 17890132,
+    "dv": "K",
     "nombre": "Andrés Eduardo",
     "apellidos": "Morales Castro",
     "correo": "andres.morales@gmail.com",
@@ -85,7 +91,8 @@
   },
   {
     "id": "7",
-    "run": "189012322",
+    "run": 18901232,
+    "dv": "2",
     "nombre": "Paola Alejandra",
     "apellidos": "Hernández Silva",
     "correo": "paola.hernandez@duoc.cl",
@@ -99,7 +106,8 @@
   },
   {
     "id": "8",
-    "run": "190110222",
+    "run": 19011022,
+    "dv": "2",
     "nombre": "Felipe Andrés",
     "apellidos": "Vega Carrasco",
     "correo": "felipe.vega@profesor.duoc.cl",
@@ -113,7 +121,8 @@
   },
   {
     "id": "9",
-    "run": "204567824",
+    "run": 20456782,
+    "dv": "4",
     "nombre": "Carolina Beatriz",
     "apellidos": "Navarro Campos",
     "correo": "carolina.navarro@gmail.com",
@@ -127,7 +136,8 @@
   },
   {
     "id": "10",
-    "run": "215678326",
+    "run": 21567832,
+    "dv": "6",
     "nombre": "Rodrigo Alonso",
     "apellidos": "Salazar Reyes",
     "correo": "rodrigo.salazar@duoc.cl",

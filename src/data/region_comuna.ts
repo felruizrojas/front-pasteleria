@@ -1,18 +1,18 @@
 export interface Region {
     id: string;
-    nombre: string;
+    region: string;
     comunas: string[];
 }
 
 export const REGIONES_COMUNAS: Region[] = [
     {
         id: "15",
-        nombre: "Arica y Parinacota",
+        region: "Arica y Parinacota",
         comunas: ["Arica", "Camarones", "Putre", "General Lagos"],
     },
     {
         id: "01",
-        nombre: "Tarapacá",
+        region: "Tarapacá",
         comunas: [
             "Iquique",
             "Alto Hospicio",
@@ -25,7 +25,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "02",
-        nombre: "Antofagasta",
+        region: "Antofagasta",
         comunas: [
             "Antofagasta",
             "Mejillones",
@@ -40,7 +40,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "03",
-        nombre: "Atacama",
+        region: "Atacama",
         comunas: [
             "Copiapó",
             "Caldera",
@@ -55,7 +55,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "04",
-        nombre: "Coquimbo",
+        region: "Coquimbo",
         comunas: [
             "La Serena",
             "Coquimbo",
@@ -76,7 +76,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "05",
-        nombre: "Valparaíso",
+        region: "Valparaíso",
         comunas: [
             "Valparaíso",
             "Viña del Mar",
@@ -115,7 +115,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "06",
-        nombre: "O'Higgins",
+        region: "O'Higgins",
         comunas: [
             "Rancagua",
             "Codegua",
@@ -154,7 +154,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "07",
-        nombre: "Maule",
+        region: "Maule",
         comunas: [
             "Talca",
             "Constitución",
@@ -190,7 +190,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "08",
-        nombre: "Biobío",
+        region: "Biobío",
         comunas: [
             "Concepción",
             "Coronel",
@@ -229,7 +229,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "09",
-        nombre: "La Araucanía",
+        region: "La Araucanía",
         comunas: [
             "Temuco",
             "Carahue",
@@ -267,7 +267,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "14",
-        nombre: "Los Ríos",
+        region: "Los Ríos",
         comunas: [
             "Valdivia",
             "Corral",
@@ -285,7 +285,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "10",
-        nombre: "Los Lagos",
+        region: "Los Lagos",
         comunas: [
             "Puerto Montt",
             "Calbuco",
@@ -321,7 +321,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "11",
-        nombre: "Aysén",
+        region: "Aysén",
         comunas: [
             "Coyhaique",
             "Lago Verde",
@@ -337,7 +337,7 @@ export const REGIONES_COMUNAS: Region[] = [
     },
     {
         id: "12",
-        nombre: "Magallanes",
+        region: "Magallanes",
         comunas: [
             "Punta Arenas",
             "Laguna Blanca",

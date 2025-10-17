@@ -8,6 +8,7 @@ import {
 	validateContactForm,
 	type ContactFormValues,
 } from '@/utils/validations/contactValidations'
+import { sanitizeNameField } from '@/utils/validations/userValidations'
 import type { ValidationErrors } from '@/utils/validations/types'
 
 type ContactMessage = ContactFormValues & {
@@ -21,7 +22,8 @@ const ContactPage = () => {
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const { name, value } = event.currentTarget
-		setValues((previous) => ({ ...previous, [name]: value }))
+		const sanitizedValue = name === 'nombre' ? sanitizeNameField(value) : value
+		setValues((previous) => ({ ...previous, [name]: sanitizedValue }))
 		setErrors((previous) => ({ ...previous, [name]: undefined }))
 		setFeedback(null)
 	}

@@ -1,0 +1,177 @@
+[
+  {
+    "id": "15",
+    "region": "Arica y Parinacota",
+    "comunas": [
+      "Arica",
+      "Camarones",
+      "Putre",
+      "General Lagos"
+    ]
+  },
+  {
+    "id": "01",
+    "region": "Tarapacá",
+    "comunas": [
+      "Iquique",
+      "Alto Hospicio",
+      "Pozo Almonte",
+      "Pica",
+      "Huara"
+    ]
+  },
+  {
+    "id": "02",
+    "region": "Antofagasta",
+    "comunas": [
+      "Antofagasta",
+      "Calama",
+      "Tocopilla",
+      "Mejillones",
+      "San Pedro de Atacama"
+    ]
+  },
+  {
+    "id": "03",
+    "region": "Atacama",
+    "comunas": [
+      "Copiapó",
+      "Caldera",
+      "Vallenar",
+      "Tierra Amarilla",
+      "Chañaral"
+    ]
+  },
+  {
+    "id": "04",
+    "region": "Coquimbo",
+    "comunas": [
+      "La Serena",
+      "Coquimbo",
+      "Ovalle",
+      "Vicuna",
+      "Illapel"
+    ]
+  },
+  {
+    "id": "05",
+    "region": "Valparaíso",
+    "comunas": [
+      "Valparaíso",
+      "Viña del Mar",
+      "Concón",
+      "Quilpué",
+      "Villa Alemana"
+    ]
+  },
+  {
+    "id": "06",
+    "region": "O'Higgins",
+    "comunas": [
+      "Rancagua",
+      "Machalí",
+      "San Fernando",
+      "Pichilemu",
+      "Rengo"
+    ]
+  },
+  {
+    "id": "07",
+    "region": "Maule",
+    "comunas": [
+      "Talca",
+      "Curicó",
+      "Linares",
+      "Cauquenes",
+      "San Javier"
+    ]
+  },
+  {
+    "id": "08",
+    "region": "Biobío",
+    "comunas": [
+      "Concepción",
+      "Talcahuano",
+      "Los Ángeles",
+      "Coronel",
+      "Chillán"
+    ]
+  },
+  {
+    "id": "09",
+    "region": "La Araucanía",
+    "comunas": [
+      "Temuco",
+      "Padre Las Casas",
+      "Villarrica",
+      "Angol",
+      "Pucón"
+    ]
+  },
+  {
+    "id": "10",
+    "region": "Los Lagos",
+    "comunas": [
+      "Puerto Montt",
+      "Puerto Varas",
+      "Osorno",
+      "Castro",
+      "Ancud"
+    ]
+  },
+  {
+    "id": "11",
+    "region": "Aysén",
+    "comunas": [
+      "Coyhaique",
+      "Puerto Aysén",
+      "Chile Chico",
+      "Cochrane",
+      "Guaitecas"
+    ]
+  },
+  {
+    "id": "12",
+    "region": "Magallanes",
+    "comunas": [
+      "Punta Arenas",
+      "Puerto Natales",
+      "Porvenir",
+      "Cabo de Hornos",
+      "Torres del Paine"
+    ]
+  },
+  {
+    "id": "13",
+    "region": "Metropolitana",
+    "comunas": [
+      "Santiago",
+      "Providencia",
+      "Ñuñoa",
+      "Maipú",
+      "La Florida"
+    ]
+  },
+  {
+    "id": "14",
+    "region": "Los Ríos",
+    "comunas": [
+      "Valdivia",
+      "La Unión",
+      "Río Bueno",
+      "Panguipulli",
+      "Futrono"
+    ]
+  },
+  {
+    "id": "16",
+    "region": "Ñuble",
+    "comunas": [
+      "Chillán",
+      "Chillán Viejo",
+      "San Carlos",
+      "Bulnes",
+      "Quillón"
+    ]
+  }
+]

@@ -1,13 +1,14 @@
 export interface Usuario {
     id: number;
-    run: string;
+    run: number;
+    dv: string;
     primerNombre: string;
     segundoNombre: string;
     apellidoPaterno: string;
     apellidoMaterno: string;
     correo: string;
     fechaNacimiento: string;
-    tipoUsuario: "Administrador" | "Cliente" | "Vendedor";
+    tipoUsuario: 'SuperAdmin' | 'Administrador' | 'Cliente' | 'Vendedor';
     region: string;
     comuna: string;
     direccion: string;
@@ -17,22 +18,24 @@ export interface Usuario {
 export const USUARIOS: Usuario[] = [
     {
         id: 1,
-        run: "11111111-1",
+        run: 11111111,
+        dv: '1',
         primerNombre: "Ana",
         segundoNombre: "María",
         apellidoPaterno: "Pérez",
         apellidoMaterno: "Soto",
         correo: "ana@duoc.cl",
         fechaNacimiento: "12/05/1990",
-        tipoUsuario: "Administrador",
+    tipoUsuario: "SuperAdmin",
         region: "Metropolitana",
         comuna: "Santiago",
         direccion: "Av. Libertador 123",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 2,
-        run: "12345678-5",
+        run: 12345678,
+        dv: '5',
         primerNombre: "Luis",
         segundoNombre: "Felipe",
         apellidoPaterno: "González",
@@ -43,11 +46,12 @@ export const USUARIOS: Usuario[] = [
         region: "Valparaíso",
         comuna: "Viña del Mar",
         direccion: "Calle 5 Norte 456",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 3,
-        run: "14567832-3",
+        run: 14567832,
+        dv: '3',
         primerNombre: "Marcela",
         segundoNombre: "Andrea",
         apellidoPaterno: "Rojas",
@@ -58,11 +62,12 @@ export const USUARIOS: Usuario[] = [
         region: "Biobío",
         comuna: "Concepción",
         direccion: "Pasaje Los Álamos 789",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 4,
-        run: "15678932-1",
+        run: 15678932,
+        dv: '1',
         primerNombre: "José",
         segundoNombre: "Ignacio",
         apellidoPaterno: "Ramírez",
@@ -73,11 +78,12 @@ export const USUARIOS: Usuario[] = [
         region: "Araucanía",
         comuna: "Temuco",
         direccion: "Camino a Labranza 234",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 5,
-        run: "16789032-6",
+        run: 16789032,
+        dv: '6',
         primerNombre: "Claudia",
         segundoNombre: "Isabel",
         apellidoPaterno: "Fernández",
@@ -88,11 +94,12 @@ export const USUARIOS: Usuario[] = [
         region: "Maule",
         comuna: "Talca",
         direccion: "Av. San Miguel 876",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 6,
-        run: "17890132-K",
+        run: 17890132,
+        dv: 'K',
         primerNombre: "Andrés",
         segundoNombre: "Eduardo",
         apellidoPaterno: "Morales",
@@ -103,11 +110,12 @@ export const USUARIOS: Usuario[] = [
         region: "Coquimbo",
         comuna: "La Serena",
         direccion: "Los Perales 111",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 7,
-        run: "18901232-2",
+        run: 18901232,
+        dv: '2',
         primerNombre: "Paola",
         segundoNombre: "Alejandra",
         apellidoPaterno: "Hernández",
@@ -118,11 +126,12 @@ export const USUARIOS: Usuario[] = [
         region: "O'Higgins",
         comuna: "Rancagua",
         direccion: "Calle Estado 222",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 8,
-        run: "19011022-2",
+        run: 19011022,
+        dv: '2',
         primerNombre: "Felipe",
         segundoNombre: "Andrés",
         apellidoPaterno: "Vega",
@@ -133,11 +142,12 @@ export const USUARIOS: Usuario[] = [
         region: "Antofagasta",
         comuna: "Antofagasta",
         direccion: "Av. Brasil 333",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 9,
-        run: "20456782-4",
+        run: 20456782,
+        dv: '4',
         primerNombre: "Carolina",
         segundoNombre: "Beatriz",
         apellidoPaterno: "Navarro",
@@ -148,11 +158,12 @@ export const USUARIOS: Usuario[] = [
         region: "Los Lagos",
         comuna: "Puerto Montt",
         direccion: "Diego Portales 444",
-        password: "123q",
+        password: '123q',
     },
     {
         id: 10,
-        run: "21567832-6",
+        run: 21567832,
+        dv: '6',
         primerNombre: "Rodrigo",
         segundoNombre: "Alonso",
         apellidoPaterno: "Salazar",
@@ -163,6 +174,6 @@ export const USUARIOS: Usuario[] = [
         region: "Atacama",
         comuna: "Copiapó",
         direccion: "Colipí 555",
-        password: "123q",
+        password: '123q',
     },
 ];

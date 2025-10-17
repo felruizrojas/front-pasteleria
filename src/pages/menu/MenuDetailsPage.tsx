@@ -288,7 +288,7 @@ const MenuDetailsPage = () => {
 			<div className="row g-4">
 				<div className="col-lg-7">
 					<div className="card card-soft shadow-soft h-100 d-flex">
-						<div className="card-body p-3 d-flex flex-column gap-2 h-100">
+						<div className="card-body p-3 d-flex flex-column flex-lg-row gap-3 h-100">
 							<div className="flex-grow-1 d-flex align-items-center justify-content-center">
 								<div className="ratio ratio-4x3 w-100">
 									<img
@@ -299,7 +299,7 @@ const MenuDetailsPage = () => {
 								</div>
 							</div>
 							{galleryImages.length > 1 ? (
-								<div className="menu-gallery__thumbs" role="list">
+								<div className="menu-gallery__thumbs menu-gallery__thumbs--vertical" role="list">
 									{galleryImages.map((imageSrc) => {
 										const isActive = imageSrc === selectedImage
 										return (
@@ -328,18 +328,18 @@ const MenuDetailsPage = () => {
 				</div>
 
 				<div className="col-lg-5">
-					<div className="card card-soft shadow-soft h-100">
-						<div className="card-body d-flex flex-column gap-2">
+					<div className="card card-soft card-soft--compact shadow-soft h-100">
+						<div className="card-body d-flex flex-column gap-1">
 							<div>
-								<h1 className="h3 mb-2">{producto.nombre_producto}</h1>
-								<div className="small mb-2">
+								<h1 className="h3 mb-1">{producto.nombre_producto}</h1>
+								<div className="small mb-1">
 									<span className="me-2">Código:</span>
 									<code>{producto.codigo_producto}</code>
 								</div>
-								<p className="h4 mb-3">{formatPrice(producto.precio_producto)}</p>
+								<p className="h4 mb-2">{formatPrice(producto.precio_producto)}</p>
 							</div>
-							<p className="mb-3">{producto.descripción_producto}</p>
-							<hr className="my-3" />
+							<p className="mb-2">{producto.descripción_producto}</p>
+							<hr className="my-2" />
 							<div>
 								<label className="form-label" htmlFor="customMessage">
 									Mensaje personalizado (opcional)
@@ -347,45 +347,49 @@ const MenuDetailsPage = () => {
 								<textarea
 									id="customMessage"
 									className="form-control"
-									rows={3}
+									rows={2}
 									maxLength={MAX_MESSAGE_LENGTH}
 									placeholder="¡Feliz cumpleaños, Marta!"
 									value={mensaje}
 									onChange={handleMessageChange}
 								/>
-								<div className="form-text text-end mt-1">
+								<div className="form-text text-end mt-0">
 									{mensaje.length}/{MAX_MESSAGE_LENGTH} caracteres
 								</div>
 							</div>
-							<div className="mt-2">
-								<label className="form-label" htmlFor="productQuantity">
-									Cantidad
-								</label>
-								<input
-									type="number"
-									id="productQuantity"
-									className="form-control"
-									min={1}
-									max={maxQuantity}
-									value={quantity}
-									onChange={handleQuantityInputChange}
-									onBlur={handleQuantityBlur}
-								/>
-								<div className="form-text text-end">
+							<div className="mt-1">
+								<div className="row g-3 align-items-end">
+									<div className="col-12 col-sm-6">
+										<label className="form-label" htmlFor="productQuantity">
+											Cantidad
+										</label>
+										<input
+											type="number"
+											id="productQuantity"
+											className="form-control"
+											min={1}
+											max={maxQuantity}
+											value={quantity}
+											onChange={handleQuantityInputChange}
+											onBlur={handleQuantityBlur}
+										/>
+									</div>
+									<div className="col-12 col-sm-6 d-grid">
+										<Button type="button" size="lg" variant="mint" onClick={handleAddToCart} block>
+											Añadir al carrito
+										</Button>
+									</div>
+								</div>
+								<div className="form-text text-end text-sm-start mt-1">
 									Máximo {maxQuantity} {maxQuantity === 1 ? 'unidad disponible' : 'unidades disponibles'}
 								</div>
 							</div>
-							<div className="d-flex flex-column flex-sm-row gap-2">
-								<Button type="button" size="lg" variant="mint" onClick={handleAddToCart} block>
-									Añadir al carrito
-								</Button>
-							</div>
 						{feedback ? (
-							<div className="small mt-2" role="status" aria-live="polite">
+							<div className="small mt-1" role="status" aria-live="polite">
 									{feedback}
 								</div>
 							) : null}
-						<hr className="my-3" />
+						<hr className="my-2" />
 							<ul className="list-unstyled small mb-0">
 								<li>
 									<i className="bi bi-check2-circle me-2" aria-hidden="true" />Decoración personalizable
@@ -407,7 +411,7 @@ const MenuDetailsPage = () => {
 					<div className="row row-cols-1 row-cols-md-3 g-3">
 						{recommended.map((item) => (
 							<div className="col" key={item.codigo_producto}>
-								<div className="card card-soft h-100 shadow-soft">
+								<div className="card card-soft h-100 shadow-soft product-card">
 									<Link to={`/menu/${item.codigo_producto}`} className="ratio ratio-4x3">
 										<img
 											src={formatImagePath(item.imagen_producto)}

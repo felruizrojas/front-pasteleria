@@ -2,8 +2,8 @@
 # FRONT-END PASTELERÍA MIL SABORES
 
 NOTAS:
-- Para entrar como usuario se utiliza el correo de: ana@duoc.cl y pass: 123q
-- Para entrar como vendedor se utiliza el correo de: 
+- Para entrar como administrador se utiliza el correo de: ana@duoc.cl y pass: 123q (ella es SuperAdmin)
+- Para entrar como vendedor se utiliza el correo de: marcela@profesor.duoc.cl y pass: 123q
 - Para entrar como cliente cualquier correo con @gmail.com
 ============================================================================================
 
@@ -48,12 +48,61 @@ npm run dev
 ```
 
 ## 📂 Estructura del Proyecto (Mapa de carpetas)
-src/  
-├── 
+
+```text
+front-pasteleria/
+├── public/
+└── src/
+	├── assets/
+	│   └── images/
+	│       ├── about/
+	│       ├── carrusel/
+	│       ├── catalog/
+	│       └── catalog_detail/
+	├── components/
+	│   ├── common/
+	│   └── ui/
+	├── context/
+	│   ├── auth/
+	│   └── theme/
+	├── data/
+	├── hooks/
+	├── layouts/
+	├── pages/
+	│   ├── about/
+	│   ├── auth/
+	│   ├── blog/
+	│   ├── cart/
+	│   ├── contact/
+	│   ├── home/
+	│   ├── legal/
+	│   ├── menu/
+	│   │   └── components/
+	│   └── profile/
+	├── routes/
+	├── styles/
+	├── types/
+	└── utils/
+		├── storage/
+		└── validations/
+```
 
 ## Mapa del Sitio
 
+_En construcción_
+
 ## Paleta de Colores
+
+| Color             | Hex       | Uso principal |
+| ---               | ---       | --- |
+| Rosa frutilla     | `#f7b7d1` | Botones, acentos primarios |
+| Verde menta       | `#bfe2d5` | Botones secundarios, detalles suaves |
+| Título principal  | `#D67BA8` | Encabezados y marca |
+| Título secundario | `#5AA58D` | Subtítulos y enlaces destacados |
+| Título terciario  | `#c4a35a` | Íconos y badges |
+| Fondo claro       | `#FAFAFA` | Fondo de secciones |
+| Texto base        | `#2A2A2A` | Lectura principal |
+| Texto auxiliar    | `#6C757D` | Indicaciones y subtítulos |
 
 ## 🧠 Capa de Validaciones y Reglas de Negocio
 

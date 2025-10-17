@@ -5,6 +5,7 @@ import { REGIONES_COMUNAS } from '@/data/region_comuna'
 import type { StoredUser, UserRoleName } from '@/types/user'
 
 import { getLocalData, setLocalData } from './localStorageUtils'
+import { ensureHashedPassword } from '@/utils/security/password'
 
 const isBrowser = typeof window !== 'undefined'
 
@@ -38,6 +39,7 @@ type UsuarioSeed = {
 	direccion: string
 	password: string
 	avatarUrl?: string
+	codigoDescuento?: string
 }
 
 type ComunaSeed = {
@@ -75,16 +77,30 @@ export const initLocalData = (force = false) => {
 	try {
 		const usuarios = getLocalData<StoredUser>(LOCAL_STORAGE_KEYS.usuarios)
 		if (!usuarios.length) {
-			const normalized = (usuariosSeed as UsuarioSeed[]).map(({ dv, run, tipoUsuario, avatarUrl, ...rest }) => {
-				const combinedRun = `${run}${dv}`.toUpperCase()
-				return {
-					...rest,
-					tipoUsuario: tipoUsuario as UserRoleName,
-					run: combinedRun,
-					avatarUrl: avatarUrl ?? defaultProfileImage,
-				}
-			})
+			const normalized = (usuariosSeed as UsuarioSeed[]).map(
+				({ dv, run, tipoUsuario, avatarUrl, password, ...rest }) => {
+					const combinedRun = `${run}${dv}`.toUpperCase()
+					return {
+						...rest,
+						tipoUsuario: tipoUsuario as UserRoleName,
+						run: combinedRun,
+						avatarUrl: avatarUrl ?? defaultProfileImage,
+						password: ensureHashedPassword(password ?? ''),
+					}
+				},
+			)
 			setLocalData<StoredUser>(LOCAL_STORAGE_KEYS.usuarios, normalized)
+		} else {
+			const sanitizedUsuarios = usuarios.map((user) => ({
+				...user,
+				password: ensureHashedPassword(user.password ?? ''),
+			}))
+			const hasChanges = sanitizedUsuarios.some(
+				(user, index) => user.password !== usuarios[index]?.password,
+			)
+			if (hasChanges) {
+				setLocalData<StoredUser>(LOCAL_STORAGE_KEYS.usuarios, sanitizedUsuarios)
+			}
 		}
 
 		const storedRegions = getLocalData<RegionSeed>(LOCAL_STORAGE_KEYS.regiones)

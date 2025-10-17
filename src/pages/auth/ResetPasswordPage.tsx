@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import type { ChangeEvent, FocusEvent, FormEvent } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import type { ChangeEvent, FocusEvent, FormEvent, MouseEvent } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/components/common'
 import { LOCAL_STORAGE_KEYS } from '@/utils/storage/initLocalData'
@@ -14,6 +14,7 @@ import {
 	type ResetPasswordFormValues,
 } from '@/utils/validations/userValidations'
 import { errorMessages } from '@/utils/validations/errorMessages'
+import { ensureHashedPassword } from '@/utils/security/password'
 
 const createInitialValues = (): ResetPasswordFormValues => ({
 	email: '',
@@ -24,6 +25,7 @@ const createInitialValues = (): ResetPasswordFormValues => ({
 const ResetPasswordPage = () => {
 	const location = useLocation()
 	const currentPath = `${location.pathname}${location.search}`
+	const navigate = useNavigate()
 	const [showNewPassword, setShowNewPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 	const [values, setValues] = useState<ResetPasswordFormValues>(createInitialValues())
@@ -31,6 +33,17 @@ const ResetPasswordPage = () => {
 	const [touched, setTouched] = useState<Partial<Record<keyof ResetPasswordFormValues, boolean>>>({})
 	const [formMessage, setFormMessage] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
 	const [loading, setLoading] = useState(false)
+
+	const handleOpenLogin = useCallback(
+		(event: MouseEvent<HTMLAnchorElement>) => {
+			event.preventDefault()
+			navigate(`${location.pathname}${location.search}`, {
+				replace: true,
+				state: { from: currentPath, openLogin: true },
+			})
+		},
+		[currentPath, location.pathname, location.search, navigate],
+	)
 
 	const runValidation = useCallback(
 		(nextValues: ResetPasswordFormValues, nextTouched: Partial<Record<keyof ResetPasswordFormValues, boolean>>) => {
@@ -101,7 +114,7 @@ const ResetPasswordPage = () => {
 		try {
 			const updatedUser: StoredUser = {
 				...existingUser,
-				password: values.password.trim(),
+				password: ensureHashedPassword(values.password),
 				updatedAt: new Date().toISOString(),
 			}
 			saveUserRecord(updatedUser)
@@ -220,7 +233,7 @@ const ResetPasswordPage = () => {
 							<p className="text-center mt-4 mb-0">
 								<small>
 									¿Recuerdas tu contraseña?{' '}
-									<Link to="/login" className="link-body-emphasis" state={{ from: currentPath }}>
+									<Link to="/login" className="link-body-emphasis" onClick={handleOpenLogin}>
 										Volver al inicio de sesión
 									</Link>
 								</small>

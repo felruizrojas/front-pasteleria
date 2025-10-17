@@ -34,6 +34,7 @@ const scheduleLines = ['Lunes a sábado', '10:00–19:00 hrs']
 
 const Footer = () => {
 	const location = useLocation()
+ const currentYear = new Date().getFullYear()
 
 	const handleHomeClick = (event: MouseEvent<HTMLAnchorElement>) => {
 		if (typeof window === 'undefined') {
@@ -167,7 +168,7 @@ const Footer = () => {
 
 				<div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
 					<small>
-						&copy; {new Date().getFullYear()} Pastelería Mil Sabores. Todos los derechos reservados.
+						&copy; {currentYear} Pastelería Mil Sabores. Todos los derechos reservados.
 					</small>
 					<ul className="nav">
 						<li className="nav-item">

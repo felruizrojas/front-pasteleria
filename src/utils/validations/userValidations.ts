@@ -2,6 +2,7 @@ import { defaultProfileImage } from '@/assets'
 import type { StoredUser, UserRoleName } from '@/types/user'
 import { LOCAL_STORAGE_KEYS, type RegionSeed } from '@/utils/storage/initLocalData'
 import { getLocalData, setLocalData } from '@/utils/storage/localStorageUtils'
+import { ensureHashedPassword } from '@/utils/security/password'
 
 import { ALLOWED_EMAIL_DOMAINS } from './authValidations'
 import { errorMessages } from './errorMessages'
@@ -25,6 +26,7 @@ export type UserFormValues = {
 	confirmPassword?: string
 	termsAccepted?: boolean
 	avatarUrl?: string
+	codigoDescuento?: string
 }
 
 export type ResetPasswordFormValues = {
@@ -297,10 +299,15 @@ const generateUserId = () => {
 export const mapFormToStoredUser = (values: UserFormValues, current?: StoredUser | null): StoredUser => {
 	const region = getRegionById(values.regionId)
 	const timestamp = new Date().toISOString()
-	const sanitizedPassword = values.password.trim() || current?.password || ''
+	const rawPassword = values.password?.trim() ?? ''
+	const existingPassword = current?.password ?? ''
+	const resolvedPassword = rawPassword
+		? ensureHashedPassword(rawPassword)
+		: ensureHashedPassword(existingPassword)
 	const identifier = values.id ?? current?.id ?? generateUserId()
 	const avatar = values.avatarUrl?.trim() || current?.avatarUrl || defaultProfileImage
 	const role: UserRoleName = current?.tipoUsuario ?? 'Cliente'
+	const discountCode = values.codigoDescuento?.trim().toUpperCase() || current?.codigoDescuento
 
 	return {
 		id: identifier,
@@ -314,8 +321,9 @@ export const mapFormToStoredUser = (values: UserFormValues, current?: StoredUser
 		regionNombre: region?.region ?? values.regionId,
 		comuna: values.comuna.trim(),
 		direccion: values.direccion.trim(),
-		password: sanitizedPassword,
+		password: resolvedPassword,
 		avatarUrl: avatar,
+		codigoDescuento: discountCode,
 		createdAt: current?.createdAt ?? timestamp,
 		updatedAt: timestamp,
 	}

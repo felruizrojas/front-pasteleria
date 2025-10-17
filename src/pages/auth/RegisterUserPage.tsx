@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ChangeEvent, FocusEvent, FormEvent } from 'react'
+import type { ChangeEvent, FocusEvent, FormEvent, MouseEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button, Input } from '@/components/common'
@@ -38,6 +38,7 @@ const RegisterUserPage = () => {
 		password: '',
 		confirmPassword: '',
 		termsAccepted: false,
+		codigoDescuento: '',
 	})
 	const [errors, setErrors] = useState<ValidationErrors<UserFormValues>>({})
 	const [touched, setTouched] = useState<Partial<Record<keyof UserFormValues, boolean>>>({})
@@ -99,7 +100,12 @@ const RegisterUserPage = () => {
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.currentTarget
 		const field = name as keyof UserFormValues
-		const sanitizedValue = name === 'nombre' || name === 'apellidos' ? sanitizeNameField(value) : value
+		let sanitizedValue = value
+		if (name === 'nombre' || name === 'apellidos') {
+			sanitizedValue = sanitizeNameField(value)
+		} else if (name === 'codigoDescuento') {
+			sanitizedValue = value.toUpperCase()
+		}
 		const nextValues = { ...values, [field]: sanitizedValue }
 		const validation = validateUserForm(nextValues, { mode: 'create' })
 		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
@@ -112,16 +118,16 @@ const RegisterUserPage = () => {
 		setFormMessage(null)
 	}
 
-		const handleTermsChange = (event: ChangeEvent<HTMLInputElement>) => {
-			const checked = event.currentTarget.checked
-			const nextValues = { ...values, termsAccepted: checked }
-			const validation = validateUserForm(nextValues, { mode: 'create' })
-			const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched, termsAccepted: true }
-			runValidation(nextValues, nextTouched, validation)
-			setValues(nextValues)
-			setTouched(nextTouched)
-			setFormMessage(null)
-		}
+	const handleTermsChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const checked = event.currentTarget.checked
+		const nextValues = { ...values, termsAccepted: checked }
+		const validation = validateUserForm(nextValues, { mode: 'create' })
+		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched, termsAccepted: true }
+		runValidation(nextValues, nextTouched, validation)
+		setValues(nextValues)
+		setTouched(nextTouched)
+		setFormMessage(null)
+	}
 
 	const handleRunBodyChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const digits = event.currentTarget.value.replace(/\D/g, '').slice(0, 8)
@@ -236,6 +242,17 @@ const RegisterUserPage = () => {
 		navigate('/', { replace: true })
 	}
 
+	const handleLoginLinkClick = useCallback(
+		(event: MouseEvent<HTMLAnchorElement>) => {
+			event.preventDefault()
+			navigate(`${location.pathname}`, {
+				replace: true,
+				state: { from: currentPath, openLogin: true },
+			})
+		},
+		[currentPath, location.pathname, navigate],
+	)
+
 	return (
 		<main className="mt-0">
 			<section
@@ -306,11 +323,6 @@ const RegisterUserPage = () => {
 									{formMessage ? (
 										<div className={`alert alert-${formMessage.type}`} role="alert">
 											{formMessage.text}
-											{formMessage.type === 'success' ? (
-												<span className="d-block small mt-2">
-													Se asignará un rol automáticamente según el dominio de tu correo.
-												</span>
-											) : null}
 										</div>
 									) : null}
 
@@ -472,6 +484,17 @@ const RegisterUserPage = () => {
 										</div>
 									</div>
 
+									<Input
+										name="codigoDescuento"
+										label="Código promocional (opcional)"
+										placeholder="Ej: FELICES50"
+										value={values.codigoDescuento ?? ''}
+										onChange={handleInputChange}
+										onBlur={handleInputBlur}
+										errorText={errors.codigoDescuento}
+										helperText="Ingresa tu código si cuentas con una campaña vigente."
+									/>
+
 									<div className="mb-3">
 										<label className="form-label fw-semibold" htmlFor="password">
 											Contraseña
@@ -568,7 +591,7 @@ const RegisterUserPage = () => {
 
 									<p className="mb-0 text-center">
 										¿Ya tienes cuenta?{' '}
-										<Link to="/login" className="link-body-emphasis" state={{ from: currentPath }}>
+										<Link to="/login" className="link-body-emphasis" onClick={handleLoginLinkClick}>
 											Inicia sesión
 										</Link>
 									</p>

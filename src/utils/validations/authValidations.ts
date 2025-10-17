@@ -1,6 +1,7 @@
 import { LOCAL_STORAGE_KEYS } from '@/utils/storage/initLocalData'
 import { getLocalData } from '@/utils/storage/localStorageUtils'
 import type { StoredUser } from '@/types/user'
+import { passwordsMatch } from '@/utils/security/password'
 
 import { errorMessages } from './errorMessages'
 import type { ValidationResult } from './types'
@@ -82,9 +83,12 @@ export const authenticateCredentials = (values: LoginFormValues): Authentication
 	}
 
 	const normalizedEmail = normalizeEmail(values.email)
-	const matchedUser = users.find(
-		(user) => normalizeEmail(user.correo) === normalizedEmail && user.password === values.password.trim(),
-	)
+	const matchedUser = users.find((user) => {
+		if (normalizeEmail(user.correo) !== normalizedEmail) {
+			return false
+		}
+		return passwordsMatch(values.password, user.password)
+	})
 
 	if (!matchedUser) {
 		return { success: false, error: errorMessages.credentials }

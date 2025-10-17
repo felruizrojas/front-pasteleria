@@ -30,7 +30,7 @@ export const USUARIOS: Usuario[] = [
         region: "Metropolitana",
         comuna: "Santiago",
         direccion: "Av. Libertador 123",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 2,
@@ -46,7 +46,7 @@ export const USUARIOS: Usuario[] = [
         region: "Valparaíso",
         comuna: "Viña del Mar",
         direccion: "Calle 5 Norte 456",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 3,
@@ -62,7 +62,7 @@ export const USUARIOS: Usuario[] = [
         region: "Biobío",
         comuna: "Concepción",
         direccion: "Pasaje Los Álamos 789",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 4,
@@ -78,7 +78,7 @@ export const USUARIOS: Usuario[] = [
         region: "Araucanía",
         comuna: "Temuco",
         direccion: "Camino a Labranza 234",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 5,
@@ -94,7 +94,7 @@ export const USUARIOS: Usuario[] = [
         region: "Maule",
         comuna: "Talca",
         direccion: "Av. San Miguel 876",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 6,
@@ -110,7 +110,7 @@ export const USUARIOS: Usuario[] = [
         region: "Coquimbo",
         comuna: "La Serena",
         direccion: "Los Perales 111",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 7,
@@ -126,7 +126,7 @@ export const USUARIOS: Usuario[] = [
         region: "O'Higgins",
         comuna: "Rancagua",
         direccion: "Calle Estado 222",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 8,
@@ -142,7 +142,7 @@ export const USUARIOS: Usuario[] = [
         region: "Antofagasta",
         comuna: "Antofagasta",
         direccion: "Av. Brasil 333",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 9,
@@ -158,7 +158,7 @@ export const USUARIOS: Usuario[] = [
         region: "Los Lagos",
         comuna: "Puerto Montt",
         direccion: "Diego Portales 444",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
     {
         id: 10,
@@ -174,6 +174,6 @@ export const USUARIOS: Usuario[] = [
         region: "Atacama",
         comuna: "Copiapó",
         direccion: "Colipí 555",
-        password: '123q',
+    password: 'fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710',
     },
 ];

@@ -7,6 +7,7 @@ export type StoredUser = {
 	apellidos: string
 	correo: string
 	fechaNacimiento?: string
+	codigoDescuento?: string
 	tipoUsuario: UserRoleName
 	regionId: string
 	regionNombre: string

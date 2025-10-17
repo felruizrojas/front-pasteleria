@@ -1,3 +1,4 @@
+import type { StoredUser } from '@/types/user'
 export type UserRole = 'superadmin' | 'admin' | 'customer' | 'seller'
 
 export interface AuthUser {
@@ -20,4 +21,5 @@ export interface AuthContextValue {
 	isAuthenticated: boolean
 	login: (credentials: AuthCredentials) => Promise<void>
 	logout: () => void
+	refreshUser: (stored: StoredUser) => void
 }

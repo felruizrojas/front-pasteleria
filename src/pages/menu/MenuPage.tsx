@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/common'
@@ -72,6 +72,44 @@ const sanitizePriceInput = (value: string): string => {
 	return numeric.toString()
 }
 
+const KEY_CART = 'carrito'
+
+type FeedbackState = {
+	text: string
+	tone: 'success' | 'danger' | 'info'
+}
+
+const readJson = <T,>(key: string, fallback: T): T => {
+	if (!isBrowser) return fallback
+	try {
+		const raw = window.localStorage.getItem(key)
+		return raw ? (JSON.parse(raw) as T) : fallback
+	} catch {
+		return fallback
+	}
+}
+
+const writeJson = (key: string, value: unknown) => {
+	if (!isBrowser) return
+	try {
+		window.localStorage.setItem(key, JSON.stringify(value))
+	} catch {
+		// noop
+	}
+}
+
+const upsertCartItem = (producto: Producto, cantidad: number) => {
+	const cart = readJson<{ codigo: string; cantidad: number }[]>(KEY_CART, [])
+	const normalizedCartCode = producto.codigo_producto.toLowerCase()
+	const existingIndex = cart.findIndex((item) => item.codigo.toLowerCase() === normalizedCartCode)
+	if (existingIndex >= 0) {
+		cart[existingIndex].cantidad = cantidad
+	} else {
+		cart.push({ codigo: producto.codigo_producto, cantidad })
+	}
+	writeJson(KEY_CART, cart)
+}
+
 const MenuPage = () => {
 	const [selectedCategory, setSelectedCategory] = useState<'all' | number>('all')
 	const [selectedProductCode, setSelectedProductCode] = useState<'all' | Producto['codigo_producto']>('all')
@@ -79,6 +117,7 @@ const MenuPage = () => {
 	const [maxPrice, setMaxPrice] = useState('')
 	const [sortOrder, setSortOrder] = useState<OrderOption>('name-asc')
 	const [filterErrors, setFilterErrors] = useState<ValidationErrors<FilterValues>>({})
+	const [feedback, setFeedback] = useState<FeedbackState | null>(null)
 
 	const collator = useMemo(() => new Intl.Collator('es', { sensitivity: 'base' }), [])
 
@@ -214,6 +253,41 @@ const MenuPage = () => {
 		}
 	}
 
+	const feedbackTimeout = useRef<number | null>(null)
+
+	const scheduleFeedback = (next: FeedbackState) => {
+		setFeedback(next)
+		if (feedbackTimeout.current) {
+			window.clearTimeout(feedbackTimeout.current)
+		}
+		feedbackTimeout.current = window.setTimeout(() => setFeedback(null), 3500)
+	}
+
+	const handleAddToCart = (item: EnrichedProduct) => {
+		const cart = readJson<{ codigo: string; cantidad: number }[]>(KEY_CART, [])
+		const cartItem = cart.find((ci) => ci.codigo === item.codigo_producto)
+		const currentQuantity = cartItem?.cantidad ?? 0
+		const availableStock = item.stock ?? 0
+		if (availableStock <= currentQuantity) {
+			scheduleFeedback({
+				text: `Sin stock suficiente. Máximo ${availableStock} ${availableStock === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
+				tone: 'danger',
+			})
+			return
+		}
+		upsertCartItem(item, currentQuantity + 1)
+		scheduleFeedback({
+			text: `Producto añadido al carrito (${currentQuantity + 1} de ${availableStock} disponibles).`,
+			tone: 'success',
+		})
+	}
+
+	useEffect(() => () => {
+		if (feedbackTimeout.current) {
+			window.clearTimeout(feedbackTimeout.current)
+		}
+	}, [])
+
 	return (
 		<section className="py-4 py-lg-5">
 			<div className="container">
@@ -278,13 +352,22 @@ const MenuPage = () => {
 											<Button as="link" to={`/menu/${item.codigo_producto}`} variant="strawberry" block>
 												Ver detalle y personalizar
 											</Button>
-											<Button type="button" variant="mint" block>
+											<Button type="button" variant="mint" block onClick={() => handleAddToCart(item)}>
 												<i className="bi bi-cart-plus" aria-hidden="true" /> Añadir al carrito
 											</Button>
 											<Button type="button" variant="mint" block onClick={() => handleShare(item)}>
 												<i className="bi bi-share" aria-hidden="true" /> Compartir
 											</Button>
 										</div>
+										{feedback ? (
+											<div
+												className={`small mt-1 ${feedback.tone === 'danger' ? 'text-danger' : feedback.tone === 'success' ? 'text-success' : ''}`}
+												role="status"
+												aria-live="polite"
+											>
+												{feedback.text}
+											</div>
+										) : null}
 									</div>
 								</div>
 							</div>

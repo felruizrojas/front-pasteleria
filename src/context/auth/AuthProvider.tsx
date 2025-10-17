@@ -98,6 +98,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		removeLocalItem(ACTIVE_USER_KEY)
 	}, [])
 
+	const refreshUser = useCallback((stored: StoredUser) => {
+		setLocalItem(ACTIVE_USER_KEY, stored)
+		setUser(buildAuthUser(stored))
+	}, [])
+
 	const value = useMemo<AuthContextValue>(
 		() => ({
 			user,
@@ -105,8 +110,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 			isAuthenticated: Boolean(user),
 			login,
 			logout,
+			refreshUser,
 		}),
-		[loading, login, logout, user],
+		[loading, login, logout, refreshUser, user],
 	)
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

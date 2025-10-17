@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { Breadcrumbs, Button } from '@/components/common'
@@ -10,6 +10,21 @@ import cx from '@/utils/cx'
 const KEY_CART = 'carrito'
 const KEY_MSGS = 'mensajesCarrito'
 const MAX_MESSAGE_LENGTH = 25
+
+type StoredCartItem = {
+	codigo: string
+	nombre?: string
+	precio?: number
+	imagen?: string
+	cantidad: number
+	mensaje?: string
+	[id: string]: unknown
+}
+
+type FeedbackState = {
+	text: string
+	tone: 'success' | 'danger' | 'info'
+}
 
 const catalogImages = import.meta.glob('@/assets/images/catalog/**/*', {
 	import: 'default',
@@ -82,34 +97,46 @@ const writeJson = (key: string, value: unknown) => {
 	}
 }
 
-const updateCartMessages = (codigo: string, mensaje: string) => {
-	const cart = readJson<unknown[]>(KEY_CART, [])
-	if (!cart.length) return
-	const normalizedCartCode = codigo.toLowerCase()
+const upsertCartItem = (producto: Producto, cantidad: number, mensaje: string) => {
+	const cart = readJson<StoredCartItem[]>(KEY_CART, [] as StoredCartItem[])
+	const normalizedCartCode = producto.codigo_producto.toLowerCase()
 
-	const matches = (item: Record<string, unknown>) => {
-		const ids = ['codigo', 'id', 'sku'].map((key) => item[key])
+	const matches = (item: StoredCartItem | Record<string, unknown>) => {
+		if (!item || typeof item !== 'object') return false
+		const record = item as Record<string, unknown>
+		const ids = ['codigo', 'id', 'sku'].map((key) => record[key])
 		return ids
 			.filter((value): value is string => typeof value === 'string')
 			.some((value) => value.toLowerCase() === normalizedCartCode)
 	}
 
-	const updated = cart.map((item) => {
-		if (typeof item !== 'object' || item === null) return item
-		const product = item as Record<string, unknown>
-		if (!matches(product)) return item
-		const nextItem = { ...product }
-		if (mensaje) {
-			nextItem.mensaje = mensaje
-			nextItem.msg = mensaje
-		} else {
-			delete nextItem.mensaje
-			delete nextItem.msg
-		}
-		return nextItem
-	})
+	const existingIndex = cart.findIndex((item) => matches(item))
+	const baseItem: StoredCartItem =
+		existingIndex >= 0
+			? { ...cart[existingIndex] }
+			: {
+				codigo: producto.codigo_producto,
+				nombre: producto.nombre_producto,
+				precio: producto.precio_producto,
+				imagen: producto.imagen_producto,
+				cantidad,
+			}
 
-	writeJson(KEY_CART, updated)
+	baseItem.cantidad = cantidad
+
+	if (mensaje) {
+		baseItem.mensaje = mensaje
+	} else {
+		delete baseItem.mensaje
+	}
+
+	if (existingIndex >= 0) {
+		cart[existingIndex] = baseItem
+	} else {
+		cart.push(baseItem)
+	}
+
+	writeJson(KEY_CART, cart)
 }
 
 const getAllProducts = () => catalogoDatos.categorias.flatMap((categoria) => categoria.productos)
@@ -163,12 +190,15 @@ const MenuDetailsPage = () => {
 
 	const maxQuantity = producto?.stock ?? 1
 
-	const clampQuantity = (value: number) => {
-		if (Number.isNaN(value) || value <= 0) {
-			return 1
-		}
-		return Math.min(Math.floor(value), maxQuantity)
-	}
+	const clampQuantity = useCallback(
+		(value: number) => {
+			if (Number.isNaN(value) || value <= 0) {
+				return 1
+			}
+			return Math.min(Math.floor(value), maxQuantity)
+		},
+		[maxQuantity],
+	)
 
 	const handleQuantityInputChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const rawValue = event.target.value.trim()
@@ -178,6 +208,12 @@ const MenuDetailsPage = () => {
 		}
 
 		const parsed = Number(rawValue)
+		if (parsed > maxQuantity && maxQuantity > 0) {
+			scheduleFeedback({
+				text: `Sin stock suficiente. Máximo ${maxQuantity} ${maxQuantity === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
+				tone: 'danger',
+			})
+		}
 		setQuantity(clampQuantity(parsed))
 	}
 
@@ -196,14 +232,34 @@ const MenuDetailsPage = () => {
 
 	const [mensaje, setMensaje] = useState('')
 	const [quantity, setQuantity] = useState(1)
-	const [feedback, setFeedback] = useState<string | null>(null)
+	const [feedback, setFeedback] = useState<FeedbackState | null>(null)
 	const [selectedImage, setSelectedImage] = useState<string | null>(null)
 	const feedbackTimeout = useRef<number | null>(null)
 
+	const scheduleFeedback = useCallback((next: FeedbackState) => {
+		setFeedback(next)
+		if (feedbackTimeout.current) {
+			window.clearTimeout(feedbackTimeout.current)
+		}
+		feedbackTimeout.current = window.setTimeout(() => setFeedback(null), 3500)
+	}, [])
+
 	useEffect(() => {
 		if (!producto) return
+		if (!producto) {
+			setQuantity(1)
+			return
+		}
+
+		const storedItems = readJson<StoredCartItem[]>(KEY_CART, [] as StoredCartItem[])
+		const current = storedItems.find((item) => item.codigo?.toLowerCase() === producto.codigo_producto.toLowerCase())
+		if (current?.cantidad) {
+			setQuantity(clampQuantity(current.cantidad))
+			return
+		}
+
 		setQuantity(1)
-	}, [producto])
+	}, [producto, clampQuantity])
 
 	useEffect(() => {
 		if (!producto) return
@@ -243,22 +299,40 @@ const MenuDetailsPage = () => {
 	const handleAddToCart = () => {
 		if (!producto) return
 
+		const availableUnits = producto.stock ?? 0
 		const safeQuantity = clampQuantity(quantity)
+
+		if (availableUnits <= 0 || safeQuantity <= 0) {
+			scheduleFeedback({
+				text: 'Sin stock disponible para este producto en este momento.',
+				tone: 'danger',
+			})
+			return
+		}
+
+		if (safeQuantity < quantity) {
+			setQuantity(safeQuantity)
+			scheduleFeedback({
+				text: `Sin stock suficiente. Máximo ${availableUnits} ${availableUnits === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
+				tone: 'danger',
+			})
+			return
+		}
+
 		if (safeQuantity !== quantity) {
 			setQuantity(safeQuantity)
 		}
 		const trimmed = mensaje.trim()
 		persistMessage(producto.codigo_producto, trimmed)
-		updateCartMessages(producto.codigo_producto, trimmed)
+		upsertCartItem(producto, safeQuantity, trimmed)
 		const quantityLabel = safeQuantity === 1 ? '1 unidad' : `${safeQuantity} unidades`
 		const messageFeedback = trimmed
 			? 'Mensaje personalizado guardado. Puedes revisarlo en tu carrito.'
 			: 'Mensaje eliminado para este producto.'
-		setFeedback(`Cantidad seleccionada: ${quantityLabel}. ${messageFeedback}`)
-		if (feedbackTimeout.current) {
-			window.clearTimeout(feedbackTimeout.current)
-		}
-		feedbackTimeout.current = window.setTimeout(() => setFeedback(null), 3500)
+		scheduleFeedback({
+			text: `Cantidad seleccionada: ${quantityLabel}. ${messageFeedback}`,
+			tone: 'success',
+		})
 	}
 
 	useEffect(() => () => {
@@ -385,10 +459,17 @@ const MenuDetailsPage = () => {
 								</div>
 							</div>
 						{feedback ? (
-							<div className="small mt-1" role="status" aria-live="polite">
-									{feedback}
-								</div>
-							) : null}
+							<div
+								className={cx('small mt-1', {
+									'text-success': feedback.tone === 'success',
+									'text-danger': feedback.tone === 'danger',
+								})}
+								role="status"
+								aria-live="polite"
+							>
+								{feedback.text}
+							</div>
+						) : null}
 						<hr className="my-2" />
 							<ul className="list-unstyled small mb-0">
 								<li>

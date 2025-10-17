@@ -49,12 +49,33 @@ const createInitialValues = (user?: StoredUser | null): UserFormValues => {
 		confirmPassword: '',
 		termsAccepted: true,
 		avatarUrl: user?.avatarUrl ?? defaultProfileImage,
+		codigoDescuento: user?.codigoDescuento ?? '',
 	}
+}
+
+const calculateAge = (isoDate?: string) => {
+	if (!isoDate) {
+		return null
+	}
+
+	const parsed = new Date(isoDate)
+	if (Number.isNaN(parsed.getTime())) {
+		return null
+	}
+
+	const today = new Date()
+	let age = today.getFullYear() - parsed.getFullYear()
+	const monthDiff = today.getMonth() - parsed.getMonth()
+	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < parsed.getDate())) {
+		age -= 1
+	}
+
+	return age
 }
 
 const ProfilePage = () => {
 	const navigate = useNavigate()
-	const { login, logout } = useAuth()
+	const { logout, refreshUser } = useAuth()
 	const [avatarUrl, setAvatarUrl] = useState<string>(defaultProfileImage)
 	const [regions, setRegions] = useState<RegionSeed[]>([])
 	const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
@@ -63,6 +84,33 @@ const ProfilePage = () => {
 	const [touched, setTouched] = useState<Partial<Record<keyof UserFormValues, boolean>>>({})
 	const [feedback, setFeedback] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
 	const isSuperAdmin = currentUser?.tipoUsuario === 'SuperAdmin'
+	const [showToast, setShowToast] = useState(false)
+
+	const benefits = useMemo(() => {
+		const messages: Array<{ id: string; text: string }> = []
+		const birthdate = values.fechaNacimiento || currentUser?.fechaNacimiento
+		const age = calculateAge(birthdate)
+		const promoCode = (currentUser?.codigoDescuento ?? values.codigoDescuento ?? '').trim().toUpperCase()
+		const email = (values.correo || currentUser?.correo || '').toLowerCase()
+		const domain = email.split('@')[1] ?? ''
+
+		if (typeof age === 'number' && age >= 50) {
+			messages.push({ id: 'senior-discount', text: 'Obtienes un 50% de descuento por ser mayor de 50 años.' })
+		}
+
+		if (promoCode === 'FELICES50') {
+			messages.push({ id: 'felices50', text: 'Aplicamos un 10% de descuento gracias al código FELICES50.' })
+		}
+
+		if (domain.endsWith('duoc.cl')) {
+			messages.push({
+				id: 'duoc-birthday',
+				text: 'Tienes derecho a una torta gratis en tu cumpleaños por pertenecer a la comunidad Duoc UC.',
+			})
+		}
+
+		return messages
+	}, [currentUser?.codigoDescuento, currentUser?.correo, currentUser?.fechaNacimiento, values.codigoDescuento, values.correo, values.fechaNacimiento])
 
 	const runValidation = useCallback(
 		(
@@ -168,7 +216,12 @@ const ProfilePage = () => {
 		}
 		const { name, value } = event.currentTarget
 		const field = name as keyof UserFormValues
-		const sanitizedValue = name === 'nombre' || name === 'apellidos' ? sanitizeNameField(value) : value
+		let sanitizedValue = value
+		if (name === 'nombre' || name === 'apellidos') {
+			sanitizedValue = sanitizeNameField(value)
+		} else if (name === 'codigoDescuento') {
+			sanitizedValue = value.toUpperCase()
+		}
 		const nextValues = { ...values, [field]: sanitizedValue }
 		const nextTouched = { ...touched, [field]: true }
 		runValidation(nextValues, nextTouched)
@@ -224,63 +277,11 @@ const ProfilePage = () => {
 		setFeedback(null)
 	}
 
-	const handleRunBodyChange = (event: ChangeEvent<HTMLInputElement>) => {
-		if (isSuperAdmin) {
-			return
-		}
-		const digits = event.currentTarget.value.replace(/\D/g, '').slice(0, 8)
-		const combined = `${digits}${values.runDigit ?? ''}`
-		const nextValues = { ...values, runBody: digits, run: combined }
-		const validation = validateUserForm(nextValues, { mode: 'update' })
-		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
-		if (touched.runBody || validation.errors.runBody) {
-			nextTouched.runBody = true
-		}
-		if (touched.run || validation.errors.run) {
-			nextTouched.run = true
-		}
-		runValidation(nextValues, nextTouched, validation)
-		setValues(nextValues)
-		setTouched(nextTouched)
-		setFeedback(null)
-	}
+	const handleRunBodyChange = () => {}
 
-	const handleRunDigitChange = (event: ChangeEvent<HTMLInputElement>) => {
-		if (isSuperAdmin) {
-			return
-		}
-		const verifier = event.currentTarget.value.replace(/[^0-9kK]/g, '').toUpperCase().slice(0, 1)
-		const combined = `${values.runBody ?? ''}${verifier}`
-		const nextValues = { ...values, runDigit: verifier, run: combined }
-		const validation = validateUserForm(nextValues, { mode: 'update' })
-		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = { ...touched }
-		if (touched.runDigit || validation.errors.runDigit) {
-			nextTouched.runDigit = true
-		}
-		if (validation.errors.runBody) {
-			nextTouched.runBody = true
-		}
-		if (touched.run || validation.errors.run) {
-			nextTouched.run = true
-		}
-		runValidation(nextValues, nextTouched, validation)
-		setValues(nextValues)
-		setTouched(nextTouched)
-		setFeedback(null)
-	}
+	const handleRunDigitChange = () => {}
 
-	const handleRunBlur = (field: 'runBody' | 'runDigit') => {
-		if (isSuperAdmin) {
-			return
-		}
-		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
-			...touched,
-			[field]: true,
-			run: true,
-		}
-		runValidation(values, nextTouched)
-		setTouched(nextTouched)
-	}
+	const handleRunBlur = () => {}
 
 	const handleSave = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
@@ -308,10 +309,7 @@ const ProfilePage = () => {
 			return
 		}
 
-		const record = mapFormToStoredUser(
-			{ ...values, avatarUrl, password: values.password || currentUser.password },
-			currentUser,
-		)
+		const record = mapFormToStoredUser({ ...values, avatarUrl, password: values.password || '' }, currentUser)
 		saveUserRecord(record)
 		setLocalItem(LOCAL_STORAGE_KEYS.activeUser, record)
 		setCurrentUser(record)
@@ -320,12 +318,29 @@ const ProfilePage = () => {
 		setErrors({})
 		setTouched({})
 		setFeedback({ type: 'success', text: 'Datos actualizados con éxito.' })
-
-		await login({ email: record.correo, password: record.password })
+		refreshUser(record)
+		setShowToast(true)
 	}
 
 	return (
 		<main className="py-5 bg-light-subtle">
+			{showToast ? (
+				<div className="position-fixed top-0 start-50 translate-middle-x mt-4" style={{ zIndex: 1055 }}>
+					<div className="toast show align-items-center text-bg-success border-0" role="status" aria-live="assertive">
+						<div className="d-flex">
+							<div className="toast-body">
+								<i className="bi bi-check-circle-fill me-2" aria-hidden="true" /> Cambios guardados con éxito.
+							</div>
+							<button
+								type="button"
+								className="btn-close btn-close-white me-2 m-auto"
+								aria-label="Cerrar"
+								onClick={() => setShowToast(false)}
+							/>
+						</div>
+					</div>
+				</div>
+			) : null}
 			<div className="container">
 				<div className="row g-4 g-lg-5">
 					<div className="col-12 col-lg-4">
@@ -391,6 +406,22 @@ const ProfilePage = () => {
 								</div>
 							</div>
 						</div>
+
+						{benefits.length > 0 ? (
+							<div className="card border-0 shadow-sm mt-4">
+								<div className="card-body p-4">
+									<h2 className="h6 text-uppercase text-body-secondary fw-semibold mb-3">Beneficios disponibles</h2>
+									<ul className="list-unstyled mb-0 small">
+										{benefits.map((benefit) => (
+											<li key={benefit.id} className="d-flex align-items-start gap-2 mb-2">
+												<i className="bi bi-gift-fill text-success mt-1" aria-hidden="true" />
+												<span>{benefit.text}</span>
+											</li>
+										))}
+									</ul>
+								</div>
+							</div>
+						) : null}
 					</div>
 
 					<div className="col-12 col-lg-8">
@@ -423,10 +454,11 @@ const ProfilePage = () => {
 												placeholder="19011022"
 												value={values.runBody}
 												onChange={handleRunBodyChange}
-												onBlur={() => handleRunBlur('runBody')}
+												onBlur={handleRunBlur}
 												maxLength={8}
 												style={{ flex: 1 }}
-												disabled={isSuperAdmin}
+												disabled
+												readOnly
 											/>
 											<span className="fw-semibold" aria-hidden="true">
 												-
@@ -441,10 +473,11 @@ const ProfilePage = () => {
 												placeholder="K"
 												value={values.runDigit}
 												onChange={handleRunDigitChange}
-												onBlur={() => handleRunBlur('runDigit')}
+												onBlur={handleRunBlur}
 												maxLength={1}
 												style={{ width: '4rem' }}
-												disabled={isSuperAdmin}
+												disabled
+												readOnly
 											/>
 										</div>
 										{errors.runBody ? <div className="invalid-feedback d-block">{errors.runBody}</div> : null}
@@ -504,8 +537,18 @@ const ProfilePage = () => {
 											value={values.correo}
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
-											helperText="El rol se asigna automáticamente según el dominio."
 											errorText={errors.correo}
+											disabled={isSuperAdmin}
+										/>
+										<Input
+											label="Código promocional (opcional)"
+											name="codigoDescuento"
+											placeholder="Ej: FELICES50"
+											value={values.codigoDescuento ?? ''}
+											onChange={handleInputChange}
+											onBlur={handleInputBlur}
+											helperText="Úsalo para activar beneficios disponibles."
+											errorText={errors.codigoDescuento}
 											disabled={isSuperAdmin}
 										/>
 									</div>

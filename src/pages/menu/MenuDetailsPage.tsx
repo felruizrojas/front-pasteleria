@@ -100,39 +100,45 @@ const writeJson = (key: string, value: unknown) => {
 const upsertCartItem = (producto: Producto, cantidad: number, mensaje: string) => {
 	const cart = readJson<StoredCartItem[]>(KEY_CART, [] as StoredCartItem[])
 	const normalizedCartCode = producto.codigo_producto.toLowerCase()
+	const cleanMsg = (mensaje ?? '').trim()
+	const stockLimit = producto.stock ?? Infinity
 
-	const matches = (item: StoredCartItem | Record<string, unknown>) => {
-		if (!item || typeof item !== 'object') return false
-		const record = item as Record<string, unknown>
-		const ids = ['codigo', 'id', 'sku'].map((key) => record[key])
-		return ids
-			.filter((value): value is string => typeof value === 'string')
-			.some((value) => value.toLowerCase() === normalizedCartCode)
-	}
+	// Suma total actualmente almacenada para este codigo (todas las variantes de mensaje)
+	const totalForCode = cart
+		.filter((it) => typeof it === 'object' && it.codigo?.toLowerCase() === normalizedCartCode)
+		.reduce((acc, it) => acc + Number(it.cantidad ?? 0), 0)
 
-	const existingIndex = cart.findIndex((item) => matches(item))
-	const baseItem: StoredCartItem =
-		existingIndex >= 0
-			? { ...cart[existingIndex] }
-			: {
-				codigo: producto.codigo_producto,
-				nombre: producto.nombre_producto,
-				precio: producto.precio_producto,
-				imagen: producto.imagen_producto,
-				cantidad,
-			}
-
-	baseItem.cantidad = cantidad
-
-	if (mensaje) {
-		baseItem.mensaje = mensaje
-	} else {
-		delete baseItem.mensaje
-	}
+	// Buscar entrada exactamente igual (codigo + mensaje)
+	const existingIndex = cart.findIndex(
+		(it) => it.codigo?.toLowerCase() === normalizedCartCode && ((it.mensaje ?? '').trim() === cleanMsg),
+	)
 
 	if (existingIndex >= 0) {
-		cart[existingIndex] = baseItem
+		const existing = { ...cart[existingIndex] }
+		const prev = Number(existing.cantidad ?? 0)
+		// Cuánto queda disponible sin contar la cantidad previa de esta misma entrada
+		const remaining = Math.max(0, stockLimit - (totalForCode - prev))
+		const addable = Math.min(cantidad, remaining)
+		existing.cantidad = prev + addable
+		if (cleanMsg) existing.mensaje = cleanMsg
+		else delete existing.mensaje
+		cart[existingIndex] = existing
 	} else {
+		const remaining = Math.max(0, stockLimit - totalForCode)
+		const toAdd = Math.min(cantidad, remaining)
+		if (toAdd <= 0) {
+			// nothing to add
+			writeJson(KEY_CART, cart)
+			return
+		}
+		const baseItem: StoredCartItem = {
+			codigo: producto.codigo_producto,
+			nombre: producto.nombre_producto,
+			precio: producto.precio_producto,
+			imagen: producto.imagen_producto,
+			cantidad: toAdd,
+		}
+		if (cleanMsg) baseItem.mensaje = cleanMsg
 		cart.push(baseItem)
 	}
 
@@ -201,24 +207,35 @@ const MenuDetailsPage = () => {
 	)
 
 	const handleQuantityInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-		const rawValue = event.target.value.trim()
+		const rawValue = event.target.value
+		// Permitir campo vacío mientras el usuario escribe
 		if (rawValue === '') {
 			setQuantity(1)
 			return
 		}
-
 		const parsed = Number(rawValue)
+		if (Number.isNaN(parsed)) return
+		// Limitar el máximo al stock definido en data
 		if (parsed > maxQuantity && maxQuantity > 0) {
+			setQuantity(maxQuantity)
 			scheduleFeedback({
 				text: `Sin stock suficiente. Máximo ${maxQuantity} ${maxQuantity === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
 				tone: 'danger',
 			})
+			return
 		}
-		setQuantity(clampQuantity(parsed))
+		setQuantity(parsed)
 	}
 
 	const handleQuantityBlur = () => {
-		setQuantity((current) => clampQuantity(current))
+		// Corregir y normalizar al perder el foco
+		const parsed = Number(quantity)
+		if (Number.isNaN(parsed) || parsed < 1) {
+			// restablecer a 1 si no hay entrada válida
+			setQuantity(1)
+			return
+		}
+		setQuantity(clampQuantity(parsed))
 	}
 
 	const galleryImages = useMemo(() => {
@@ -231,7 +248,7 @@ const MenuDetailsPage = () => {
 	}, [producto])
 
 	const [mensaje, setMensaje] = useState('')
-	const [quantity, setQuantity] = useState(1)
+	const [quantity, setQuantity] = useState<number | string>(1)
 	const [feedback, setFeedback] = useState<FeedbackState | null>(null)
 	const [selectedImage, setSelectedImage] = useState<string | null>(null)
 	const feedbackTimeout = useRef<number | null>(null)
@@ -300,7 +317,8 @@ const MenuDetailsPage = () => {
 		if (!producto) return
 
 		const availableUnits = producto.stock ?? 0
-		const safeQuantity = clampQuantity(quantity)
+		const parsedQty = Number(quantity)
+		const safeQuantity = clampQuantity(Number.isNaN(parsedQty) ? 0 : parsedQty)
 
 		if (availableUnits <= 0 || safeQuantity <= 0) {
 			scheduleFeedback({
@@ -310,7 +328,7 @@ const MenuDetailsPage = () => {
 			return
 		}
 
-		if (safeQuantity < quantity) {
+		if (safeQuantity < parsedQty) {
 			setQuantity(safeQuantity)
 			scheduleFeedback({
 				text: `Sin stock suficiente. Máximo ${availableUnits} ${availableUnits === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
@@ -319,8 +337,21 @@ const MenuDetailsPage = () => {
 			return
 		}
 
-		if (safeQuantity !== quantity) {
+		if (safeQuantity !== parsedQty) {
 			setQuantity(safeQuantity)
+		}
+		// Verificar cantidad ya almacenada en localStorage antes de agregar (sumando todas las entradas con mismo código)
+		const storedItems = readJson<StoredCartItem[]>(KEY_CART, [] as StoredCartItem[])
+		const normalized = producto.codigo_producto.toLowerCase()
+		const totalForCode = storedItems
+			.filter((it) => it.codigo?.toLowerCase() === normalized)
+			.reduce((acc, it) => acc + Number(it.cantidad ?? 0), 0)
+		if (totalForCode + safeQuantity > availableUnits) {
+			scheduleFeedback({
+				text: `Sin stock suficiente. Ya tienes ${totalForCode} en el carrito. Máximo ${availableUnits} ${availableUnits === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
+				tone: 'danger',
+			})
+			return
 		}
 		const trimmed = mensaje.trim()
 		persistMessage(producto.codigo_producto, trimmed)
@@ -333,6 +364,10 @@ const MenuDetailsPage = () => {
 			text: `Cantidad seleccionada: ${quantityLabel}. ${messageFeedback}`,
 			tone: 'success',
 		})
+		// Limpiar campos en pantalla tras agregar
+		setMensaje('')
+		persistMessage(producto.codigo_producto, '')
+		setQuantity(1)
 	}
 
 	useEffect(() => () => {

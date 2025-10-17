@@ -79,6 +79,13 @@ type FeedbackState = {
 	tone: 'success' | 'danger' | 'info'
 }
 
+type StoredCartItem = {
+	codigo: string
+	cantidad?: number
+	mensaje?: string
+	[id: string]: unknown
+}
+
 const readJson = <T,>(key: string, fallback: T): T => {
 	if (!isBrowser) return fallback
 	try {
@@ -99,13 +106,15 @@ const writeJson = (key: string, value: unknown) => {
 }
 
 const upsertCartItem = (producto: Producto, cantidad: number) => {
-	const cart = readJson<{ codigo: string; cantidad: number }[]>(KEY_CART, [])
+	const cart = readJson<StoredCartItem[]>(KEY_CART, [])
 	const normalizedCartCode = producto.codigo_producto.toLowerCase()
 	const existingIndex = cart.findIndex((item) => item.codigo.toLowerCase() === normalizedCartCode)
+	const stockLimit = producto.stock ?? Infinity
 	if (existingIndex >= 0) {
-		cart[existingIndex].cantidad = cantidad
+		const prev = Number(cart[existingIndex].cantidad ?? 0)
+		cart[existingIndex].cantidad = Math.min(prev + cantidad, stockLimit)
 	} else {
-		cart.push({ codigo: producto.codigo_producto, cantidad })
+		cart.push({ codigo: producto.codigo_producto, cantidad: Math.min(cantidad, stockLimit) })
 	}
 	writeJson(KEY_CART, cart)
 }
@@ -117,7 +126,6 @@ const MenuPage = () => {
 	const [maxPrice, setMaxPrice] = useState('')
 	const [sortOrder, setSortOrder] = useState<OrderOption>('name-asc')
 	const [filterErrors, setFilterErrors] = useState<ValidationErrors<FilterValues>>({})
-	const [feedback, setFeedback] = useState<FeedbackState | null>(null)
 
 	const collator = useMemo(() => new Intl.Collator('es', { sensitivity: 'base' }), [])
 
@@ -253,39 +261,51 @@ const MenuPage = () => {
 		}
 	}
 
-	const feedbackTimeout = useRef<number | null>(null)
+	// NOTE: using per-card feedback only; keep `globalFeedback` for potential future uses
 
-	const scheduleFeedback = (next: FeedbackState) => {
-		setFeedback(next)
-		if (feedbackTimeout.current) {
-			window.clearTimeout(feedbackTimeout.current)
+	// Per-card feedback state and timeouts so messages appear inside each product card
+	const [cardFeedbacks, setCardFeedbacks] = useState<Record<string, FeedbackState | null>>({})
+	const cardFeedbackTimeouts = useRef<Record<string, number | null>>({})
+
+	const scheduleCardFeedback = (code: string, next: FeedbackState) => {
+		const key = String(code)
+		setCardFeedbacks((prev) => ({ ...prev, [key]: next }))
+		if (cardFeedbackTimeouts.current[key]) {
+			window.clearTimeout(cardFeedbackTimeouts.current[key] as number)
 		}
-		feedbackTimeout.current = window.setTimeout(() => setFeedback(null), 3500)
+		cardFeedbackTimeouts.current[key] = window.setTimeout(() => {
+			setCardFeedbacks((prev) => ({ ...prev, [key]: null }))
+			cardFeedbackTimeouts.current[key] = null
+		}, 3500)
 	}
 
 	const handleAddToCart = (item: EnrichedProduct) => {
-		const cart = readJson<{ codigo: string; cantidad: number }[]>(KEY_CART, [])
-		const cartItem = cart.find((ci) => ci.codigo === item.codigo_producto)
-		const currentQuantity = cartItem?.cantidad ?? 0
+		const cart = readJson<StoredCartItem[]>(KEY_CART, [])
+		const normalized = item.codigo_producto.toLowerCase()
+		const totalForCode = cart
+			.filter((it) => it.codigo?.toLowerCase() === normalized)
+			.reduce((acc, it) => acc + Number(it.cantidad ?? 0), 0)
 		const availableStock = item.stock ?? 0
-		if (availableStock <= currentQuantity) {
-			scheduleFeedback({
+		if (totalForCode >= availableStock) {
+			scheduleCardFeedback(item.codigo_producto, {
 				text: `Sin stock suficiente. Máximo ${availableStock} ${availableStock === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
 				tone: 'danger',
 			})
 			return
 		}
-		upsertCartItem(item, currentQuantity + 1)
-		scheduleFeedback({
-			text: `Producto añadido al carrito (${currentQuantity + 1} de ${availableStock} disponibles).`,
+		// Añadir 1 unidad (desde lista no hay mensaje)
+		upsertCartItem(item, 1)
+		scheduleCardFeedback(item.codigo_producto, {
+			text: 'Producto agregado al carrito',
 			tone: 'success',
 		})
 	}
 
 	useEffect(() => () => {
-		if (feedbackTimeout.current) {
-			window.clearTimeout(feedbackTimeout.current)
-		}
+		// clear any per-card timeouts
+		Object.values(cardFeedbackTimeouts.current).forEach((id) => {
+			if (id) window.clearTimeout(id)
+		})
 	}, [])
 
 	return (
@@ -320,6 +340,7 @@ const MenuPage = () => {
 							? 'Sin productos visibles.'
 							: `${totalProductos} ${totalProductos === 1 ? 'producto disponible' : 'productos disponibles'}`}
 					</p>
+					{/* Removed global feedback UI */}
 				</div>
 
 				{totalProductos === 0 ? (
@@ -359,13 +380,15 @@ const MenuPage = () => {
 												<i className="bi bi-share" aria-hidden="true" /> Compartir
 											</Button>
 										</div>
-										{feedback ? (
+										{/* no per-card feedback — global feedback is shown above the grid */}
+										{/* per-card feedback shown below "Compartir" */}
+										{cardFeedbacks[item.codigo_producto] ? (
 											<div
-												className={`small mt-1 ${feedback.tone === 'danger' ? 'text-danger' : feedback.tone === 'success' ? 'text-success' : ''}`}
+												className={`small ${cardFeedbacks[item.codigo_producto]?.tone === 'danger' ? 'text-danger' : cardFeedbacks[item.codigo_producto]?.tone === 'success' ? 'text-success' : ''}`}
 												role="status"
 												aria-live="polite"
 											>
-												{feedback.text}
+												{cardFeedbacks[item.codigo_producto]?.text}
 											</div>
 										) : null}
 									</div>

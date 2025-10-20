@@ -1,4 +1,5 @@
 import { Button } from '@/components/common'
+import { showOffcanvas } from '@/utils/offcanvas'
 
 import type { PrimaryLink, SecondaryLink } from '@/types/navbar'
 
@@ -82,7 +83,10 @@ const MobileNav = ({ primaryLinks, secondaryLinks, currentPath, onNavigate, auth
 					data-bs-toggle="offcanvas"
 					data-bs-target="#offcanvasLogin"
 					variant="strawberry"
-					onClick={onNavigate}
+							onClick={() => {
+								onNavigate()
+								showOffcanvas('offcanvasLogin')
+							}}
 				>
 					{authAction.label}
 				</Button>

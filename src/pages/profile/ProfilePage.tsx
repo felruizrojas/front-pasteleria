@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/common'
 import { defaultProfileImage } from '@/assets'
 import useAuth from '@/hooks/useAuth'
+import { cleanupOffcanvas, remountLoginOffcanvas } from '@/utils/offcanvas'
 import { LOCAL_STORAGE_KEYS, type RegionSeed } from '@/utils/storage/initLocalData'
 import { getLocalData, getLocalItem, setLocalItem } from '@/utils/storage/localStorageUtils'
 import {
@@ -102,7 +103,7 @@ const ProfilePage = () => {
 			messages.push({ id: 'felices50', text: 'Aplicamos un 10% de descuento gracias al código FELICES50.' })
 		}
 
-		if (domain.endsWith('duoc.cl')) {
+		if (domain === 'duoc.cl') {
 			messages.push({
 				id: 'duoc-birthday',
 				text: 'Tienes derecho a una torta gratis en tu cumpleaños por pertenecer a la comunidad Duoc UC.',
@@ -182,9 +183,6 @@ const ProfilePage = () => {
 	)
 
 	const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
-		if (isSuperAdmin) {
-			return
-		}
 		const file = event.currentTarget.files?.[0]
 		if (!file) {
 			return
@@ -202,18 +200,12 @@ const ProfilePage = () => {
 	}
 
 	const handleAvatarReset = () => {
-		if (isSuperAdmin) {
-			return
-		}
 		setAvatarUrl(defaultProfileImage)
 		setValues((prev) => ({ ...prev, avatarUrl: defaultProfileImage }))
 		setTouched((prev) => ({ ...prev, avatarUrl: true }))
 	}
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-		if (isSuperAdmin) {
-			return
-		}
 		const { name, value } = event.currentTarget
 		const field = name as keyof UserFormValues
 		let sanitizedValue = value
@@ -231,9 +223,6 @@ const ProfilePage = () => {
 	}
 
 	const handleInputBlur = (event: FocusEvent<HTMLInputElement>) => {
-		if (isSuperAdmin) {
-			return
-		}
 		const { name } = event.currentTarget
 		if (!name) {
 			return
@@ -245,9 +234,6 @@ const ProfilePage = () => {
 	}
 
 	const handleRegionChange = (event: ChangeEvent<HTMLSelectElement>) => {
-		if (isSuperAdmin) {
-			return
-		}
 		const nextRegion = event.currentTarget.value
 		const nextValues = { ...values, regionId: nextRegion, comuna: '' }
 		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
@@ -262,9 +248,6 @@ const ProfilePage = () => {
 	}
 
 	const handleComunaChange = (event: ChangeEvent<HTMLSelectElement>) => {
-		if (isSuperAdmin) {
-			return
-		}
 		const nextComuna = event.currentTarget.value
 		const nextValues = { ...values, comuna: nextComuna }
 		const nextTouched: Partial<Record<keyof UserFormValues, boolean>> = {
@@ -289,12 +272,14 @@ const ProfilePage = () => {
 			setFeedback({ type: 'danger', text: 'No es posible actualizar el perfil sin sesión activa.' })
 			return
 		}
+		// Permitir que la superadmin actualice todo excepto su RUN
 		if (currentUser.tipoUsuario === 'SuperAdmin') {
-			setFeedback({
-				type: 'danger',
-				text: 'La cuenta principal está protegida y no admite modificaciones.',
-			})
-			return
+			const originalRun = currentUser.run ?? ''
+			const newRun = values.run ?? ''
+			if (originalRun !== newRun) {
+				setFeedback({ type: 'danger', text: 'La cuenta principal no permite modificar el RUN.' })
+				return
+			}
 		}
 
 		const fieldKeys = Object.keys(values) as Array<keyof UserFormValues>
@@ -397,7 +382,9 @@ const ProfilePage = () => {
 										type="button"
 										variant="strawberry"
 										onClick={() => {
+											cleanupOffcanvas('offcanvasLogin')
 											logout()
+											remountLoginOffcanvas()
 											navigate('/', { replace: true })
 										}}
 									>
@@ -434,11 +421,7 @@ const ProfilePage = () => {
 											{feedback.text}
 										</div>
 									) : null}
-									{isSuperAdmin ? (
-										<div className="alert alert-warning" role="status">
-											Esta cuenta superadministradora está protegida. No es posible editar sus datos desde esta vista.
-										</div>
-									) : null}
+			
 									<div className="col-12 col-md-6">
 										<label className="form-label fw-semibold" htmlFor="profileRunBody">
 											RUN
@@ -498,7 +481,7 @@ const ProfilePage = () => {
 											value={values.fechaNacimiento ?? ''}
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
-											disabled={isSuperAdmin}
+											/* superadmin puede editar excepto RUN */
 										/>
 										{errors.fechaNacimiento ? (
 											<div className="invalid-feedback d-block">{errors.fechaNacimiento}</div>
@@ -513,7 +496,7 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.nombre}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -525,7 +508,7 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.apellidos}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										/>
 									</div>
 									<div className="col-12">
@@ -538,7 +521,7 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.correo}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										/>
 										<Input
 											label="Código promocional (opcional)"
@@ -549,7 +532,7 @@ const ProfilePage = () => {
 											onBlur={handleInputBlur}
 											helperText="Úsalo para activar beneficios disponibles."
 											errorText={errors.codigoDescuento}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -561,7 +544,7 @@ const ProfilePage = () => {
 											className={`form-select${errors.regionId ? ' is-invalid' : ''}`}
 											value={values.regionId}
 											onChange={handleRegionChange}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										>
 											<option value="">Selecciona una región</option>
 											{regions.map((region) => (
@@ -581,7 +564,7 @@ const ProfilePage = () => {
 										<select
 											id="comuna"
 											className={`form-select${errors.comuna ? ' is-invalid' : ''}`}
-											disabled={isSuperAdmin || !values.regionId}
+											disabled={!values.regionId}
 											value={values.comuna}
 											onChange={handleComunaChange}
 										>
@@ -605,7 +588,7 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.direccion}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -619,7 +602,7 @@ const ProfilePage = () => {
 											onBlur={handleInputBlur}
 											helperText="Déjalo en blanco para mantener tu contraseña actual."
 											errorText={errors.password}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										/>
 									</div>
 									<div className="col-12 col-md-6">
@@ -632,12 +615,12 @@ const ProfilePage = () => {
 											onChange={handleInputChange}
 											onBlur={handleInputBlur}
 											errorText={errors.confirmPassword}
-											disabled={isSuperAdmin}
+											/* editable por superadmin */
 										/>
 									</div>
 
 									<div className="d-flex flex-wrap gap-2 mt-4">
-										<Button type="submit" variant="strawberry" disabled={isSuperAdmin}>
+										<Button type="submit" variant="strawberry">
 											<i className="bi bi-save2 me-1" aria-hidden="true" /> Guardar cambios
 										</Button>
 									</div>

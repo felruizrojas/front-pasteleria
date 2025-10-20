@@ -3,8 +3,9 @@ import { Link, useParams } from 'react-router-dom'
 
 import { Breadcrumbs, Button } from '@/components/common'
 import type { BreadcrumbItem } from '@/components/common'
-import type { Producto } from '@/data/menu_datos'
-import { catalogoDatos } from '@/data/menu_datos'
+import menuData from '@/data/menu_datos.json'
+type Producto = (typeof menuData)['categorias'][number]['productos'][number]
+const catalogoDatos = menuData
 import cx from '@/utils/cx'
 
 const KEY_CART = 'carrito'
@@ -199,7 +200,7 @@ const MenuDetailsPage = () => {
 	const clampQuantity = useCallback(
 		(value: number) => {
 			if (Number.isNaN(value) || value <= 0) {
-				return 1
+				return 0
 			}
 			return Math.min(Math.floor(value), maxQuantity)
 		},
@@ -210,7 +211,7 @@ const MenuDetailsPage = () => {
 		const rawValue = event.target.value
 		// Permitir campo vacío mientras el usuario escribe
 		if (rawValue === '') {
-			setQuantity(1)
+			setQuantity('')
 			return
 		}
 		const parsed = Number(rawValue)
@@ -232,7 +233,7 @@ const MenuDetailsPage = () => {
 		const parsed = Number(quantity)
 		if (Number.isNaN(parsed) || parsed < 1) {
 			// restablecer a 1 si no hay entrada válida
-			setQuantity(1)
+			setQuantity('')
 			return
 		}
 		setQuantity(clampQuantity(parsed))
@@ -248,7 +249,8 @@ const MenuDetailsPage = () => {
 	}, [producto])
 
 	const [mensaje, setMensaje] = useState('')
-	const [quantity, setQuantity] = useState<number | string>(1)
+	// Mostrar el campo vacío por defecto; permitimos number | string para manejar el input vacío ('')
+	const [quantity, setQuantity] = useState<number | string>('')
 	const [feedback, setFeedback] = useState<FeedbackState | null>(null)
 	const [selectedImage, setSelectedImage] = useState<string | null>(null)
 	const feedbackTimeout = useRef<number | null>(null)
@@ -263,10 +265,6 @@ const MenuDetailsPage = () => {
 
 	useEffect(() => {
 		if (!producto) return
-		if (!producto) {
-			setQuantity(1)
-			return
-		}
 
 		const storedItems = readJson<StoredCartItem[]>(KEY_CART, [] as StoredCartItem[])
 		const current = storedItems.find((item) => item.codigo?.toLowerCase() === producto.codigo_producto.toLowerCase())
@@ -275,7 +273,8 @@ const MenuDetailsPage = () => {
 			return
 		}
 
-		setQuantity(1)
+		// Por defecto dejamos el campo vacío
+		setQuantity('')
 	}, [producto, clampQuantity])
 
 	useEffect(() => {
@@ -325,6 +324,8 @@ const MenuDetailsPage = () => {
 				text: 'Sin stock disponible para este producto en este momento.',
 				tone: 'danger',
 			})
+			// limpiar cantidad en la UI cuando no se puede agregar
+			setQuantity('')
 			return
 		}
 
@@ -334,6 +335,8 @@ const MenuDetailsPage = () => {
 				text: `Sin stock suficiente. Máximo ${availableUnits} ${availableUnits === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
 				tone: 'danger',
 			})
+			// dejar el campo vacío para que el usuario reingrese
+			setQuantity('')
 			return
 		}
 
@@ -351,6 +354,8 @@ const MenuDetailsPage = () => {
 				text: `Sin stock suficiente. Ya tienes ${totalForCode} en el carrito. Máximo ${availableUnits} ${availableUnits === 1 ? 'unidad disponible' : 'unidades disponibles'}.`,
 				tone: 'danger',
 			})
+			// limpiar campo para que el usuario vea que debe reingresar
+			setQuantity('')
 			return
 		}
 		const trimmed = mensaje.trim()
@@ -364,10 +369,10 @@ const MenuDetailsPage = () => {
 			text: `Cantidad seleccionada: ${quantityLabel}. ${messageFeedback}`,
 			tone: 'success',
 		})
-		// Limpiar campos en pantalla tras agregar
+		// Limpiar campos en pantalla tras agregar: mensaje y dejar cantidad vacía
 		setMensaje('')
 		persistMessage(producto.codigo_producto, '')
-		setQuantity(1)
+		setQuantity('')
 	}
 
 	useEffect(() => () => {

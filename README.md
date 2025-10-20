@@ -1,11 +1,11 @@
-============================================================================================
+=======================================================================================
 # FRONT-END PASTELERÍA MIL SABORES
 
 NOTAS:
 - Para entrar como administrador se utiliza el correo de: ana@duoc.cl y pass: 123q (ella es SuperAdmin)
 - Para entrar como vendedor se utiliza el correo de: marcela@profesor.duoc.cl y pass: 123q
 - Para entrar como cliente cualquier correo con @gmail.com
-============================================================================================
+=======================================================================================
 
 # 🍰 Pastelería Mil Sabores - Frontend
 
@@ -28,7 +28,9 @@ El sistema permite:
 - ⚛️ React 18 + TypeScript  
 - 🎨 Bootstrap 5.3 + Bootstrap Icons  
 - ⚡ Vite  
-- 📦 Node.js + npm  
+- 📦 Node.js + npm
+
+[![Programming Skills](https://skillicons.dev/icons?i=html,css,bootstrap,react,typescript)](https://skillicons.dev)
 
 ## 🚀 Instalación y Ejecución
 
@@ -61,7 +63,7 @@ front-pasteleria/
 	│       └── catalog_detail/
 	├── components/
 	│   ├── common/
-	│   └── ui/
+	|	|── menu/
 	├── context/
 	│   ├── auth/
 	│   └── theme/
@@ -77,12 +79,11 @@ front-pasteleria/
 	│   ├── home/
 	│   ├── legal/
 	│   ├── menu/
-	│   │   └── components/
 	│   └── profile/
 	├── routes/
-	├── styles/
 	├── types/
 	└── utils/
+		├── security/
 		├── storage/
 		└── validations/
 ```
@@ -111,8 +112,7 @@ _En construcción_
 - Felipe Ruiz
 
 ## 📸 Vista Previa
-![Inicio](./public/screenshots/home.png)
-![Carrito](./public/screenshots/cart.png)
+![Inicio](./public/screenshot-home.png)
 
 ## REPOSITORIO
 https://github.com/felruizrojas/front-pasteleria.git

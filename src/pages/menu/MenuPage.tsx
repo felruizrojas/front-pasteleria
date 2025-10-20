@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/common'
-import type { Producto } from '@/data/menu_datos'
-import { catalogoDatos } from '@/data/menu_datos'
-import MenuFilters, { type OrderOption } from '@/pages/menu/components/MenuFilters'
+import menuData from '@/data/menu_datos.json'
+type Producto = (typeof menuData)['categorias'][number]['productos'][number]
+const catalogoDatos = menuData
+import MenuFilters, { type OrderOption } from '@/components/menu/MenuFilters'
 import { validatePriceFilters } from '@/utils/validations/filtersValidations'
 import type { FilterValues } from '@/utils/validations/filtersValidations'
 import type { ValidationErrors } from '@/utils/validations/types'

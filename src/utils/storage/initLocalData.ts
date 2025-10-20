@@ -1,6 +1,6 @@
 import { defaultProfileImage } from '@/assets'
 import usuariosSeed from '@/data/usuarios.json'
-import { REGIONES_COMUNAS } from '@/data/region_comuna'
+import region_comunas from '@/data/region_comuna.json'
 
 import type { StoredUser, UserRoleName } from '@/types/user'
 
@@ -61,7 +61,7 @@ const buildComunasSeed = (regions: RegionSeed[]): ComunaSeed[] =>
 		})),
 	)
 
-const normalizedSeedRegions: RegionSeed[] = REGIONES_COMUNAS.map((entry) => ({
+const normalizedSeedRegions: RegionSeed[] = region_comunas.map((entry) => ({
 	id: entry.id,
 	region: entry.region.trim(),
 	comunas: entry.comunas.map((comuna) => comuna.trim()).filter((comuna) => comuna.length > 0),

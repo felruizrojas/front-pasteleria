@@ -27,9 +27,10 @@ const Breadcrumbs = ({ items, className }: BreadcrumbsProps) => {
 						)
 					}
 
+					// Apply pink style to all breadcrumb hyperlinks
 					return (
 						<li key={item.label} className="breadcrumb-item">
-							<Link to={item.to}>{item.label}</Link>
+							<Link to={item.to} className="breadcrumb-link--pink">{item.label}</Link>
 						</li>
 					)
 				})}

@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
+import { Carousel } from 'bootstrap'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/common'
-import { catalogoDatos } from '@/data/menu_datos'
+import catalogoDatos from '@/data/menu_datos.json'
 
 interface CarouselItem {
 	id: string
@@ -84,6 +85,28 @@ const formatImagePath = (relativePath: string) => {
 const fallbackCategoryImage = new URL('@/assets/images/generica.png', import.meta.url).href
 
 const HomePage = () => {
+
+	useEffect(() => {
+		// Respect users who prefer reduced motion
+		if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			return
+		}
+
+		const el = document.getElementById(carouselId)
+		if (!el) return
+
+		// Try to get existing instance (Bootstrap >=5.2 exposes getInstance)
+		// @ts-ignore
+		let instance = (Carousel as any).getInstance?.(el) || new Carousel(el, { interval: 3000, pause: 'hover', touch: true })
+
+		if (instance && typeof instance.cycle === 'function') {
+			instance.cycle()
+		}
+
+		return () => {
+			if (instance && typeof instance.pause === 'function') instance.pause()
+		}
+	}, [])
 	const featuredCategories = useMemo(
 		() =>
 			catalogoDatos.categorias.map((categoria) => {
@@ -105,6 +128,7 @@ const HomePage = () => {
 					id={carouselId}
 					className="carousel slide"
 					data-bs-ride="carousel"
+					data-bs-interval="5000"
 					data-bs-pause="hover"
 					aria-live="polite"
 				>

@@ -6,6 +6,7 @@ import cx from '@/utils/cx'
 import MobileNav from './MobileNav'
 import type { PrimaryLink, SecondaryLink } from '@/types/navbar'
 import useAuth from '@/hooks/useAuth'
+import { showOffcanvas } from '@/utils/offcanvas'
 
 const primaryLinks: PrimaryLink[] = [
 	{ label: 'Inicio', to: '/', icon: 'bi-house-door', ariaLabel: 'Inicio' },
@@ -186,6 +187,7 @@ const Navbar = () => {
 									data-bs-toggle="offcanvas"
 									data-bs-target="#offcanvasLogin"
 									variant="strawberry"
+									onClick={() => showOffcanvas('offcanvasLogin')}
 								>
 									Iniciar sesión
 								</Button>

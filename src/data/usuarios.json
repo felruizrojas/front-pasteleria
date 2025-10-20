@@ -12,7 +12,7 @@
     "regionNombre": "Metropolitana",
     "comuna": "Santiago",
     "direccion": "Av. Libertador 123",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "2",
@@ -20,14 +20,14 @@
     "dv": "5",
     "nombre": "Luis Felipe",
     "apellidos": "González Fuentes",
-    "correo": "luis@gmail.com",
+    "correo": "luis@duoc.cl",
     "fechaNacimiento": "1985-11-20",
-    "tipoUsuario": "Cliente",
+    "tipoUsuario": "Administrador",
     "regionId": "05",
     "regionNombre": "Valparaíso",
     "comuna": "Viña del Mar",
     "direccion": "Calle 5 Norte 456",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "3",
@@ -42,7 +42,7 @@
     "regionNombre": "Biobío",
     "comuna": "Concepción",
     "direccion": "Pasaje Los Álamos 789",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "4",
@@ -50,14 +50,14 @@
     "dv": "1",
     "nombre": "José Ignacio",
     "apellidos": "Ramírez Torres",
-    "correo": "jose.ramirez@gmail.com",
+    "correo": "jose.ramirez@profesor.duoc.cl",
     "fechaNacimiento": "1995-07-14",
-    "tipoUsuario": "Cliente",
+    "tipoUsuario": "Vendedor",
     "regionId": "09",
     "regionNombre": "Araucanía",
     "comuna": "Temuco",
     "direccion": "Camino a Labranza 234",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "5",
@@ -65,14 +65,14 @@
     "dv": "6",
     "nombre": "Claudia Isabel",
     "apellidos": "Fernández Mella",
-    "correo": "claudia.fernandez@duoc.cl",
+    "correo": "claudia.fernandez@gmail.com",
     "fechaNacimiento": "1992-09-30",
-    "tipoUsuario": "Administrador",
+    "tipoUsuario": "Cliente",
     "regionId": "07",
     "regionNombre": "Maule",
     "comuna": "Talca",
     "direccion": "Av. San Miguel 876",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "6",
@@ -87,7 +87,7 @@
     "regionNombre": "Coquimbo",
     "comuna": "La Serena",
     "direccion": "Los Perales 111",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "7",
@@ -95,14 +95,14 @@
     "dv": "2",
     "nombre": "Paola Alejandra",
     "apellidos": "Hernández Silva",
-    "correo": "paola.hernandez@duoc.cl",
+    "correo": "paola.hernandez@gmail.com",
     "fechaNacimiento": "1998-12-05",
-    "tipoUsuario": "Vendedor",
+    "tipoUsuario": "Cliente",
     "regionId": "06",
     "regionNombre": "O'Higgins",
     "comuna": "Rancagua",
     "direccion": "Calle Estado 222",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "8",
@@ -110,14 +110,14 @@
     "dv": "2",
     "nombre": "Felipe Andrés",
     "apellidos": "Vega Carrasco",
-    "correo": "felipe.vega@profesor.duoc.cl",
+    "correo": "felipe.vega@gmail.com",
     "fechaNacimiento": "1975-04-10",
-    "tipoUsuario": "Administrador",
+    "tipoUsuario": "Cliente",
     "regionId": "02",
     "regionNombre": "Antofagasta",
     "comuna": "Antofagasta",
     "direccion": "Av. Brasil 333",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "9",
@@ -132,7 +132,7 @@
     "regionNombre": "Los Lagos",
     "comuna": "Puerto Montt",
     "direccion": "Diego Portales 444",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   },
   {
     "id": "10",
@@ -140,13 +140,13 @@
     "dv": "6",
     "nombre": "Rodrigo Alonso",
     "apellidos": "Salazar Reyes",
-    "correo": "rodrigo.salazar@duoc.cl",
+    "correo": "rodrigo.salazar@gmail.com",
     "fechaNacimiento": "1993-06-25",
-    "tipoUsuario": "Vendedor",
+    "tipoUsuario": "Cliente",
     "regionId": "03",
     "regionNombre": "Atacama",
     "comuna": "Copiapó",
     "direccion": "Colipí 555",
-  "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
+    "password": "fbd77bc68717f45eedbf71d09826c4a64c0447da1f42c7a6dbf608fa7c97f710"
   }
 ]

@@ -3,8 +3,9 @@ import { Link, useParams } from 'react-router-dom'
 
 import { Breadcrumbs, Button } from '@/components/common'
 import type { BreadcrumbItem } from '@/components/common'
-import type { Producto } from '@/data/menu_datos'
-import { catalogoDatos } from '@/data/menu_datos'
+import menuData from '@/data/menu_datos.json'
+type Producto = (typeof menuData)['categorias'][number]['productos'][number]
+const catalogoDatos = menuData
 import cx from '@/utils/cx'
 
 const KEY_CART = 'carrito'

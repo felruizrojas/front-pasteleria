@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import Footer from '@/layouts/Footer'
@@ -10,6 +10,7 @@ import { showOffcanvas } from '@/utils/offcanvas'
 const AppLayout = () => {
 	const location = useLocation()
 	const navigate = useNavigate()
+	const [offcanvasKey, setOffcanvasKey] = useState(0)
 
 	useEffect(() => {
 		const rawState = location.state
@@ -35,11 +36,19 @@ const AppLayout = () => {
 		})
 	}, [location, navigate])
 
+	useEffect(() => {
+		const handler = () => {
+			setOffcanvasKey((k) => k + 1)
+		}
+		window.addEventListener('remountLoginOffcanvas', handler as EventListener)
+		return () => window.removeEventListener('remountLoginOffcanvas', handler as EventListener)
+	}, [])
+
 	return (
 		<>
 			<ScrollToTop />
 			<Navbar />
-			<LoginOffcanvas />
+			<LoginOffcanvas key={offcanvasKey} />
 			<div className="app-shell">
 				<main className="flex-grow-1">
 					<Outlet />

@@ -66,3 +66,35 @@ export const hideOffcanvas = (id: string) => {
 		document.body.removeAttribute('data-bs-padding-right')
 	}
 }
+
+export const cleanupOffcanvas = (id: string) => {
+	// Try to ensure any bootstrap instance is present and hidden, then remove backdrops and body classes.
+	const element = typeof document !== 'undefined' ? document.getElementById(id) : null
+	const bootstrapApi = getBootstrapApi()
+	if (element && bootstrapApi) {
+		// Try to get or create instance and hide it
+		const instance = bootstrapApi.Offcanvas?.getOrCreateInstance?.(element)
+		instance?.hide?.()
+	}
+
+	// Remove any stray backdrops
+	if (typeof document !== 'undefined') {
+		document.querySelectorAll('.offcanvas-backdrop').forEach((backdrop) => {
+			if (backdrop instanceof HTMLElement) {
+				backdrop.classList.remove('show')
+				backdrop.remove()
+			}
+		})
+
+		// Reset body state
+		document.body.classList.remove('offcanvas-open')
+		document.body.style.removeProperty('overflow')
+		document.body.removeAttribute('data-bs-overflow')
+		document.body.removeAttribute('data-bs-padding-right')
+	}
+}
+
+export const remountLoginOffcanvas = () => {
+	if (typeof window === 'undefined') return
+	window.dispatchEvent(new CustomEvent('remountLoginOffcanvas'))
+}

@@ -63,7 +63,7 @@ front-pasteleria/
 	│       └── catalog_detail/
 	├── components/
 	│   ├── common/
-	│   └── ui/
+	|	|── menu/
 	├── context/
 	│   ├── auth/
 	│   └── theme/
@@ -79,12 +79,11 @@ front-pasteleria/
 	│   ├── home/
 	│   ├── legal/
 	│   ├── menu/
-	│   │   └── components/
 	│   └── profile/
 	├── routes/
-	├── styles/
 	├── types/
 	└── utils/
+		├── security/
 		├── storage/
 		└── validations/
 ```
@@ -113,8 +112,7 @@ _En construcción_
 - Felipe Ruiz
 
 ## 📸 Vista Previa
-![Inicio](./public/screenshots/home.png)
-![Carrito](./public/screenshots/cart.png)
+![Inicio](./public/screenshot-home.png)
 
 ## REPOSITORIO
 https://github.com/felruizrojas/front-pasteleria.git

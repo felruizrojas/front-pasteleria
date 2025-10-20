@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Input } from '@/components/common'
 import { defaultProfileImage } from '@/assets'
 import useAuth from '@/hooks/useAuth'
+import { cleanupOffcanvas, remountLoginOffcanvas } from '@/utils/offcanvas'
 import { LOCAL_STORAGE_KEYS, type RegionSeed } from '@/utils/storage/initLocalData'
 import { getLocalData, getLocalItem, setLocalItem } from '@/utils/storage/localStorageUtils'
 import {
@@ -381,7 +382,9 @@ const ProfilePage = () => {
 										type="button"
 										variant="strawberry"
 										onClick={() => {
+											cleanupOffcanvas('offcanvasLogin')
 											logout()
+											remountLoginOffcanvas()
 											navigate('/', { replace: true })
 										}}
 									>
@@ -418,11 +421,7 @@ const ProfilePage = () => {
 											{feedback.text}
 										</div>
 									) : null}
-															{isSuperAdmin ? (
-																<div className="alert alert-warning" role="status">
-																	Esta cuenta superadministradora puede editar su perfil desde aquí excepto su RUN (no modificable).
-																</div>
-															) : null}
+			
 									<div className="col-12 col-md-6">
 										<label className="form-label fw-semibold" htmlFor="profileRunBody">
 											RUN
